@@ -11,12 +11,6 @@ Install packages
 pip install -r requirements.txt
 ```
 
-Create a `.env` file
-```sh
-cp .env.example .env
-# fill out .env
-```
-
 ### Compile and Hot-Reload for Development
 
 ```sh
