@@ -12,5 +12,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@api': fileURLToPath(new URL('./src/api', import.meta.url))
     }
+  },
+  define: {
+    'import.meta.env.VERCEL_ENV': JSON.stringify(process.env.VERCEL_ENV),
+    'import.meta.env.VERCEL_RELATED_PROJECTS': JSON.stringify(process.env.VERCEL_RELATED_PROJECTS)
   }
 });

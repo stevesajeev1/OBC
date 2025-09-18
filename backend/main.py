@@ -1,19 +1,19 @@
 from typing import Union
 
+from util.origin import get_allowed_origin
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-
 app = FastAPI()
 
-allowed_origin = os.getenv("FRONTEND_URL")
+allowed_origin = get_allowed_origin()
 app.add_middleware(
-    CORSMiddleware, allowed_origin, allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=[allowed_origin],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
