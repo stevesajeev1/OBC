@@ -33,7 +33,6 @@ const getApiHost = (): string => {
 
 export const fetchData = async (): Promise<string> => {
   const apiHost = getApiHost();
-  console.log(apiHost);
   const response = await fetch(apiHost);
   return response.json();
 };
