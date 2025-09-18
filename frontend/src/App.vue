@@ -1,6 +1,14 @@
 <script setup lang="ts">
+  import { ref, onMounted } from 'vue';
   import { RouterLink, RouterView } from 'vue-router';
   import HelloWorld from './components/HelloWorld.vue';
+  import { fetchData } from '@api/fetchData';
+
+  const data = ref<string>();
+
+  onMounted(async () => {
+    data.value = await fetchData();
+  });
 </script>
 
 <template>
@@ -14,6 +22,8 @@
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
       </nav>
+
+      <div>From backend: {{ data }}</div>
     </div>
   </header>
 
