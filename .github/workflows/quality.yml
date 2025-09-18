@@ -1,4 +1,4 @@
-name: Code Quality Checks
+name: Lint/Format
 
 on:
   pull_request:
@@ -9,28 +9,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-format:
-    name: Lint & Format
+  frontend:
+    name: Frontend
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        node-version: [18]
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
           cache: "npm"
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm ci
 
-      # Run ESLint first — if it fails, Prettier won’t run
       - name: Check formatting with ESLint
+        working-directory: frontend
         run: npm run lint:check
 
-      # Only runs if ESLint passes
       - name: Check formatting with Prettier
+        working-directory: frontend
         run: npm run format:check
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install black
+
+      - name: Run Black
+        working-directory: backend
+        run: black --check .
