@@ -10,6 +10,7 @@ const getApiHost = (): string => {
   }
 
   const project = VERCEL_RELATED_PROJECTS[0];
+  console.log(project);
 
   // Preview
   if (VERCEL_ENV === 'preview' && project.preview.branch) {

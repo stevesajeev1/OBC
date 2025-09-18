@@ -19,7 +19,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return "Hello, world!"
+    return allowed_origin
 
 
 @app.get("/items/{item_id}")
