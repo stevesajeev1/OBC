@@ -9,8 +9,8 @@ const getApiHost = (): string => {
     return DEFAULT_HOST;
   }
 
-  const project = VERCEL_RELATED_PROJECTS[0];
-  console.log(project);
+  const relatedProjects = JSON.parse(VERCEL_RELATED_PROJECTS);
+  const project = relatedProjects[0];
 
   // Preview
   if (VERCEL_ENV === 'preview' && project.preview.branch) {
@@ -33,6 +33,7 @@ const getApiHost = (): string => {
 
 export const fetchData = async (): Promise<string> => {
   const apiHost = getApiHost();
+  console.log(apiHost);
   const response = await fetch(apiHost);
   return response.json();
 };
