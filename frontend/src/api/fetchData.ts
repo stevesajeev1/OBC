@@ -1,7 +1,7 @@
 const VERCEL_ENV = import.meta.env.VERCEL_ENV;
 const VERCEL_RELATED_PROJECTS = import.meta.env.VERCEL_RELATED_PROJECTS;
 
-const DEFAULT_HOST = 'http://localhost:8000/';
+const DEFAULT_HOST = 'http://localhost:8000';
 
 const getApiHost = (): string => {
   // Local
