@@ -47,7 +47,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: backend
-        run: pip install black
+        run: pip install black isort
+
+        - name: Run isort
+        working-directory: backend
+        run: isort --check-only .
 
       - name: Run Black
         working-directory: backend

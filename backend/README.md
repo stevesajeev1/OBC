@@ -26,8 +26,9 @@ prisma generate
 fastapi dev
 ```
 
-### Format with [Black](https://github.com/psf/black)
+### Format with [Black](https://github.com/psf/black) and [isort](https://pycqa.github.io/isort/)
 
 ```sh
 black .
+isort .
 ```

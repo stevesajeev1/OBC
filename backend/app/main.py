@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from .routers import greeting
 from .util.origin import get_allowed_origin
 from .util.prisma import Prisma
-from .routers import greeting
 
 
 @asynccontextmanager

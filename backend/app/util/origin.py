@@ -1,6 +1,5 @@
-import os
 import json
-
+import os
 
 VERCEL_ENV = os.getenv("VERCEL_ENV")
 VERCEL_RELATED_PROJECTS = os.getenv("VERCEL_RELATED_PROJECTS")
