@@ -49,7 +49,7 @@ jobs:
         working-directory: backend
         run: pip install black isort
 
-        - name: Run isort
+      - name: Run isort
         working-directory: backend
         run: isort --check-only .
 
