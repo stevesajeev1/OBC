@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import greeting
 from .util.origin import get_allowed_origin
 
-
 app = FastAPI()
 
 allowed_origin = get_allowed_origin()
