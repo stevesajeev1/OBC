@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import greeting
+from .routers import cron, greeting
 from .util.origin import get_allowed_origin
 
 app = FastAPI()
@@ -15,6 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(cron.router)
 app.include_router(greeting.router)
 
 

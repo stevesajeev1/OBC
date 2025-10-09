@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "relatedProjects": ["prj_JS3JTN714DvHxb2Bh5Ih0DxZO77N"]
+  "relatedProjects": ["prj_JS3JTN714DvHxb2Bh5Ih0DxZO77N"],
+  "crons": [
+    {
+      "path": "/cron",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }

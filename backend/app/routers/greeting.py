@@ -17,7 +17,7 @@ async def greeting():
 
 
 @router.get("/names")
-async def hello_names():
+async def greet_names():
     if DATABASE_URL is None:
         raise HTTPException(status_code=500, detail="Could not connect to DB")
 
@@ -34,5 +34,5 @@ async def hello_names():
 
 
 @router.get("/{name}")
-async def hello_name(name: str):
+async def greet_name(name: str):
     return f"Hello, {name}!"
