@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "fastapi run",
-  "installCommand": "uv venv && uv pip install -r requirements.txt && prisma generate --no-engine",
+  "installCommand": "uv venv && uv pip install -r requirements.txt && source .venv/bin/activate && prisma generate --no-engine",
   "relatedProjects": ["prj_JS3JTN714DvHxb2Bh5Ih0DxZO77N"]
 }
