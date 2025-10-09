@@ -29,6 +29,8 @@ dependencies = [
     "pathspec==0.12.1",
     "platformdirs==4.4.0",
     "psycopg==3.2.10",
+    "psycopg-binary==3.2.10",
+    "psycopg-pool==3.2.6",
     "pydantic==2.11.9",
     "pydantic-core==2.33.2",
     "pygments==2.19.2",
