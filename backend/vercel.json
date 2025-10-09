@@ -1,5 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate --no-engine",
   "relatedProjects": ["prj_JS3JTN714DvHxb2Bh5Ih0DxZO77N"]
 }
