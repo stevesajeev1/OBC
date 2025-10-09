@@ -1,9 +1,8 @@
-from typing import Union
-
-from util.origin import get_allowed_origin
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from .routers import greeting
+from .util.origin import get_allowed_origin
 
 app = FastAPI()
 
@@ -16,18 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(greeting.router)
+
 
 @app.get("/")
-def read_root():
+async def root():
     return "Hello, world!"
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
