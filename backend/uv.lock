@@ -365,7 +365,6 @@ dependencies = [
     { name = "packaging" },
     { name = "pathspec" },
     { name = "platformdirs" },
-    { name = "prisma" },
     { name = "pydantic" },
     { name = "pydantic-core" },
     { name = "pygments" },
@@ -417,7 +416,6 @@ requires-dist = [
     { name = "packaging", specifier = "==25.0" },
     { name = "pathspec", specifier = "==0.12.1" },
     { name = "platformdirs", specifier = "==4.4.0" },
-    { name = "prisma", specifier = "==0.15.0" },
     { name = "pydantic", specifier = "==2.11.9" },
     { name = "pydantic-core", specifier = "==2.33.2" },
     { name = "pygments", specifier = "==2.19.2" },
@@ -466,25 +464,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/23/e8/21db9c9987b0e728855bd57bff6984f67952bea55d6f75e055c46b5383e8/platformdirs-4.4.0.tar.gz", hash = "sha256:ca753cf4d81dc309bc67b0ea38fd15dc97bc30ce419a7f58d13eb3bf14c4febf", size = 21634, upload-time = "2025-08-26T14:32:04.268Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/4b/2028861e724d3bd36227adfa20d3fd24c3fc6d52032f4a93c133be5d17ce/platformdirs-4.4.0-py3-none-any.whl", hash = "sha256:abd01743f24e5287cd7a5db3752faf1a2d65353f38ec26d98e25a6db65958c85", size = 18654, upload-time = "2025-08-26T14:32:02.735Z" },
-]
-
-[[package]]
-name = "prisma"
-version = "0.15.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "httpx" },
-    { name = "jinja2" },
-    { name = "nodeenv" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "tomlkit" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/55/d4e07cbf40d5f1ab6d1c42c23613d442bf0d06abf7f70bec280aefb28249/prisma-0.15.0.tar.gz", hash = "sha256:5cd6402aa8322625db3fc1152040404e7fc471fe7f8fa3a314fa8a99529ca107", size = 154975, upload-time = "2024-08-16T02:54:03.919Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/6d/84533aa3fcc395235d58c3412fb86013653b697d91fc53f379c83bbb0b79/prisma-0.15.0-py3-none-any.whl", hash = "sha256:de949cc94d3d91243615f22ff64490aa6e2d7cb81aabffce53d92bd3977c09a4", size = 173809, upload-time = "2024-08-16T02:54:02.326Z" },
 ]
 
 [[package]]

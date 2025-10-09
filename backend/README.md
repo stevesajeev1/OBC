@@ -22,11 +22,6 @@ uv add -r requirements.txt
 
 3. Copy environment variable based on `.env.example`.
 
-4. Generate prisma
-```sh
-prisma generate
-```
-
 ## Compile and Hot-Reload for Development
 
 ```sh
