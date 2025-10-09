@@ -3,7 +3,7 @@
   "relatedProjects": ["prj_JS3JTN714DvHxb2Bh5Ih0DxZO77N"],
   "crons": [
     {
-      "path": "/cron",
+      "path": "/cron/",
       "schedule": "0 1 * * *"
     }
   ]
