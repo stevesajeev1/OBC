@@ -13,10 +13,17 @@ Install packages
 pip install -r requirements.txt
 ```
 
+Copy environment variable based on `.env.example`.
+
+Generate prisma
+```sh
+prisma generate
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
-fastapi dev main.py
+fastapi dev
 ```
 
 ### Format with [Black](https://github.com/psf/black)
