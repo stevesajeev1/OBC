@@ -1,14 +1,14 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Union, Annotated
+from typing import Annotated, Union
 
 import psycopg2
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
 # --- load env file ---
 load_dotenv()
@@ -26,19 +26,24 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 # --- pydantic models ---
 class User(BaseModel):
     username: str
 
+
 class UserInDB(User):
     hashed_password: str
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: Union[str, None] = None
+
 
 # --- db functions ---
 def get_db_connection():
@@ -47,7 +52,7 @@ def get_db_connection():
         # needs database connection string.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="DATABASE_URL environment variable is not set. Please check your server configuration."
+            detail="DATABASE_URL environment variable is not set. Please check your server configuration.",
         )
     try:
         # psycopg2 can connect directly using the connection URI provided by Neon.
@@ -56,20 +61,26 @@ def get_db_connection():
     except psycopg2.OperationalError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Could not connect to the database: {e}"
+            detail=f"Could not connect to the database: {e}",
         )
+
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
 
+
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_user_from_db(username: str):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT username, hashed_password FROM users WHERE username = %s", (username,))
+            cur.execute(
+                "SELECT username, hashed_password FROM users WHERE username = %s",
+                (username,),
+            )
             user_record = cur.fetchone()
             if user_record:
                 return UserInDB(username=user_record[0], hashed_password=user_record[1])
@@ -77,11 +88,13 @@ def get_user_from_db(username: str):
         conn.close()
     return None
 
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
@@ -102,32 +115,35 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
+
 # --- api endpoints ---
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(form_data: OAuth2PasswordRequestForm = Depends()):
     if get_user_from_db(form_data.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
+            detail="Username already registered",
         )
-    
+
     hashed_password = get_password_hash(form_data.password)
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
                 "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
-                (form_data.username, hashed_password)
+                (form_data.username, hashed_password),
             )
             conn.commit()
     except psycopg2.Error as e:
         conn.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {e}",
         )
     finally:
         conn.close()
     return {"message": f"User '{form_data.username}' created!"}
+
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
@@ -135,10 +151,11 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
+            detail="Incorrect username or password",
         )
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @router.get("/users/me/", response_model=User)
 def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
