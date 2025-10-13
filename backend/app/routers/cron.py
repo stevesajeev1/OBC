@@ -14,7 +14,9 @@ router = APIRouter(prefix="/cron", tags=["cron"])
 @router.get("/")
 async def scrape(Authorization: Annotated[str, Header()]):
     if Authorization != f"Bearer {CRON_SECRET}":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
 
     # Do logic here
 
