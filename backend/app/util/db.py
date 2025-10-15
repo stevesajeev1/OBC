@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
 # --- db functions ---
 def get_db_connection():
     """establish connection with the NeonDB Postgres DB."""
