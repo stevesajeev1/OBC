@@ -23,15 +23,15 @@ def register_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         )
 
     hashed_password = get_password_hash(form_data.password)
-    
+
     new_user = DBUser(username=form_data.username, hashed_password=hashed_password)
 
     user_created = create_user(new_user)
 
     if not user_created:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-            detail="Could not create account (Database Error)"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create account (Database Error)",
         )
 
     # create and return access token
@@ -52,4 +52,3 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
     token_data = Token(username=user.username)
     access_token = create_access_token(token_data)
     return {"access_token": access_token, "token_type": "bearer"}
-

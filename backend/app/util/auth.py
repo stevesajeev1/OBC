@@ -57,7 +57,7 @@ def create_user(user: DBUser):
             conn.commit()
             return True
     except psycopg2.Error as e:
-        conn.rollback()   
+        conn.rollback()
         return False
     finally:
         conn.close()
@@ -83,7 +83,7 @@ def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     user = get_user_from_db(username)
     if user is None:
         raise credentials_exception
