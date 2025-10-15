@@ -5,9 +5,9 @@ from typing import Annotated, Union
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..util.db import *
-from ..util.auth import *
 from ..models.auth import *
+from ..util.auth import *
+from ..util.db import *
 
 # --- router ---
 router = APIRouter(prefix="/auth", tags=["Authentication"])
