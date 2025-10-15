@@ -1,6 +1,7 @@
 # pydantic models for routers/auth.py 
 
 from typing import Union
+
 from pydantic import BaseModel
 
 # --- pydantic models ---

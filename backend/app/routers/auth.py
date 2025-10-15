@@ -2,12 +2,8 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Union
 
-import psycopg2
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordRequestForm
 
 from ..util.db import *
 from ..util.auth import *
@@ -27,22 +23,16 @@ def register_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         )
 
     hashed_password = get_password_hash(form_data.password)
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
-                (form_data.username, hashed_password),
-            )
-            conn.commit()
-    except psycopg2.Error as e:
-        conn.rollback()
+    
+    new_user = DBUser(username=form_data.username, hashed_password=hashed_password)
+
+    user_created = create_user(new_user)
+
+    if not user_created:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            detail="Could not create account (Database Error)"
         )
-    finally:
-        conn.close()
 
     # create and return access token
     token_data = Token(username=form_data.username)
@@ -59,10 +49,7 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    access_token = create_access_token(data={"sub": user.username})
+    token_data = Token(username=user.username)
+    access_token = create_access_token(token_data)
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-@router.get("/users/me/", response_model=User)
-def read_users_me(current_user: Annotated[User, Depends(get_user)]):
-    return current_user

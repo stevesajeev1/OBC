@@ -9,8 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from .db import *
 from ..models.auth import *
+from .db import *
 
 # --- config ---
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
@@ -46,8 +46,25 @@ def get_user_from_db(username: str):
     return None
 
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
+def create_user(user: DBUser):
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
+                (user.username, user.hashed_password),
+            )
+            conn.commit()
+            return True
+    except psycopg2.Error as e:
+        conn.rollback()   
+        return False
+    finally:
+        conn.close()
+
+
+def create_access_token(data: Token):
+    to_encode = {"sub": Token.username}
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
