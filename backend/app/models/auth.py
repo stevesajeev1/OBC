@@ -1,6 +1,7 @@
 # pydantic models for routers/auth.py
 
-from typing import Union
+from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -19,18 +20,21 @@ class DBUser(User):
     hashed_password: str
 
 
-class ResponseToken(BaseModel):
-    """model representing the response of /login"""
-
-    access_token: str
-    token_type: str
-
-
 class Token(BaseModel):
     """model representing the JWT data"""
 
     username: str
 
-    def to_dict(self) -> dict:
-        """convert token data to dict"""
-        return self.model_dump()
+    def __init__(self, username):
+        super().__init__(username=username)
+
+    @staticmethod
+    def from_jwt_payload(jwt_payload: dict[str, Any]):
+        username = jwt_payload.get("sub", None)
+        if not isinstance(username, str):
+            raise Exception("JWT Payload is malformed")
+
+        return Token(username)
+
+    def to_jwt_payload(self, exp: datetime):
+        return {"sub": self.username, "exp": exp}

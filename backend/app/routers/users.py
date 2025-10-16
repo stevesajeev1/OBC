@@ -1,15 +1,12 @@
-import os
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Union
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
-from ..models.auth import *
-from ..util.auth import *
-from ..util.db import *
+from ..models.auth import User
+from ..util.auth import get_user
 
 # --- router ---
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/users", tags=["User"])
 
 
 # --- api endpoints ---

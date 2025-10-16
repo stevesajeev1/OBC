@@ -1,13 +1,16 @@
-import os
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Union
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..models.auth import *
-from ..util.auth import *
-from ..util.db import *
+from ..models.auth import DBUser, Token
+from ..util.auth import (
+    create_access_token,
+    create_user,
+    get_password_hash,
+    get_user_from_db,
+    verify_password,
+)
 
 # --- router ---
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -38,10 +41,10 @@ def register_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     token_data = Token(username=form_data.username)
     access_token = create_access_token(token_data)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return access_token
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = get_user_from_db(form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -49,6 +52,8 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+
     token_data = Token(username=user.username)
     access_token = create_access_token(token_data)
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    return access_token
