@@ -1,306 +1,297 @@
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="login-page">
     <div class="login-card">
-
-      <router-link to="/" class="back-button">
-        &#9664;
-      </router-link>
+      <router-link to="/" class="back-button"> &#9664; </router-link>
 
       <div class="card-content">
         <div class="image-area">
-          <img src="/src/assets/Color Logo Round.png" alt="Orange and Blue Collar mascot" class="alligator-mascot">
+          <img src="/src/assets/Color Logo Round.png" alt="Orange and Blue Collar mascot" class="alligator-mascot" />
         </div>
 
         <div class="form-area">
           <h1 class="welcome-text">
-            Welcome to <br>
-            <span class="orange-text">Orange</span> and 
-            <span class="blue-text">Blue</span> Collar!
+            Welcome to <br />
+            <span class="orange-text">Orange</span> and <span class="blue-text">Blue</span> Collar!
           </h1>
-          
+
           <button class="google-sign-in">
-            <img src="/src/assets/google.svg" alt="Google icon" class="google-icon">
+            <img src="/src/assets/google.svg" alt="Google icon" class="google-icon" />
             Sign up with Google
           </button>
-          
-          <p class="or-divider">or</p>
-          
-          <input type="email" placeholder="Email" class="form-input">
-          <input type="password" placeholder="Password" class="form-input">
 
-          <button class="join-button">
-            Join Now!
-          </button>
-          
+          <p class="or-divider">or</p>
+
+          <input type="email" placeholder="Email" class="form-input" />
+          <input type="password" placeholder="Password" class="form-input" />
+
+          <button class="join-button">Join Now!</button>
+
           <p class="account-prompt">
-            Already have an account? 
+            Already have an account?
             <router-link to="/login" class="sign-in-link">Sign in</router-link>
           </p>
-          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+  .login-page {
+    background-color: #7990b5;
+    background: linear-gradient(to bottom, #7990b5 0%, #3e506e 100%);
 
+    min-height: 100vh;
+    width: 100vw;
 
-.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-  background-color: #7990b5;
-  background: linear-gradient(to bottom, #7990b5 0%, #3e506e 100%);
-  
-  min-height: 100vh;
-  width: 100vw;
+    padding: 20;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: flex-start;
 
-  padding: 20;
+    padding: 20px;
+    box-sizing: border-box;
+  }
 
-  justify-content: center; 
-  align-items: flex-start; 
+  .login-card {
+    background-image: linear-gradient(to bottom, rgba(95, 136, 198, 0.25) 96%, #c28b3a 100%);
 
-  padding: 20px;
-  box-sizing: border-box;
-}
+    width: 100%;
+    max-width: 700px;
 
-.login-card {
-  background-image: linear-gradient(to bottom, rgba(95, 136, 198, 0.25) 96%, #c28b3a 100%);
-  
-  width: 100%;
-  max-width: 700px; 
-  
-  padding: 5px; 
-  
-  border-radius: 20px;
-  box-shadow: 0 0 15px rgba(255, 165, 0, 0.5), 0 0 0 2px #c28b3a;
-  position: relative;
+    padding: 5px;
 
-  margin-top: 150px;
-}
+    border-radius: 20px;
+    box-shadow:
+      0 0 15px rgba(255, 165, 0, 0.5),
+      0 0 0 2px #c28b3a;
+    position: relative;
 
-.back-button {
-  position: absolute;
-  top: 30px;
-  left:35px;
+    margin-top: 150px;
+  }
 
-  font-size: 32px;
-  color: #fff;
+  .back-button {
+    position: absolute;
+    top: 30px;
+    left: 35px;
 
-  text-decoration : none;
-  cursor: pointer;
-}
+    font-size: 32px;
+    color: #fff;
 
-.card-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    text-decoration: none;
+    cursor: pointer;
+  }
 
-.image-area {
-  flex-shrink: 0;
-  width: 40%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.alligator-mascot {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  border-radius: 50%;
-  object-fit: cover;
-}
+  .image-area {
+    flex-shrink: 0;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.form-area {
-  flex-grow: 1; 
-  max-width: 500px;
-  width: 50%;
-  margin-top: -5px; 
-  margin-right: 10px;
-}
+  .alligator-mascot {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
-.welcome-text {
-  font-family: 'Irish Grover', cursive;
-  color: #f7f1e3;
-  font-size: 36px;
-  text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
-  text-align: center;
-  line-height: 1.2;
-  margin-bottom: 20px;
-  width: 400px;
+  .form-area {
+    flex-grow: 1;
+    max-width: 500px;
+    width: 50%;
+    margin-top: -5px;
+    margin-right: 10px;
+  }
 
-  margin-top: -10px;
-  margin-left: -10px;
-}
+  .welcome-text {
+    font-family: 'Irish Grover', cursive;
+    color: #f7f1e3;
+    font-size: 36px;
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    width: 400px;
 
-.orange-text {
-  color: #D4862D; 
-}
+    margin-top: -10px;
+    margin-left: -10px;
+  }
 
-.blue-text {
-  color: #1E90FF;
-}
+  .orange-text {
+    color: #d4862d;
+  }
 
-.google-sign-in {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
+  .blue-text {
+    color: #1e90ff;
+  }
 
-  width: 320px;
-  height: 40px;
-  min-height: 40px;
-  max-height: 40px;
-  margin: 0 auto 15px auto; 
+  .google-sign-in {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
 
-  padding: 8px 16px;
+    width: 320px;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    margin: 0 auto 15px auto;
 
+    padding: 8px 16px;
 
-  border-radius: 6px; 
-  border: 1px solid #000;
-  background: #C0D1EB; 
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25); 
-  
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
+    border-radius: 6px;
+    border: 1px solid #000;
+    background: #c0d1eb;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 
-.google-sign-in:hover {
-  background-color: #a4bde0; 
-}
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
 
-.google-icon {
-  height: 18px; 
-  width: auto;
-}
+  .google-sign-in:hover {
+    background-color: #a4bde0;
+  }
 
-.join-button {
+  .google-icon {
+    height: 18px;
+    width: auto;
+  }
 
-  display: flex;
-  flex-direction: column; 
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  .join-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 
-  font-family: "Irish Grover", cursive;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    font-family: 'Irish Grover', cursive;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 
-  width: 320px; 
-  height: 40px;
-  min-height: 40px;
-  max-height: 40px;
-  margin: 20px auto 10px auto; 
+    width: 320px;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    margin: 20px auto 10px auto;
 
-  padding: 8px 16px;
+    padding: 8px 16px;
 
-  border-radius: 6px; 
-  border: 1px solid #000;
-  background: #D4862D;
-  color: white; 
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 1.05em;
-}
+    border-radius: 6px;
+    border: 1px solid #000;
+    background: #d4862d;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 1.05em;
+  }
 
-.join-button:hover {
-  background-color: #ae6c25; 
-}
+  .join-button:hover {
+    background-color: #ae6c25;
+  }
 
-.form-input {
+  .form-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
 
-  display: flex; 
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-  
-  width: 320px;
-  min-width: 320px;
-  max-width: 320px;
-  height: 40px;
-  min-height: 40px;
-  max-height: 40px;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
 
-  margin: 0 auto 15px auto; 
+    margin: 0 auto 15px auto;
 
-  padding: 8px 12px;
+    padding: 8px 12px;
 
-  border-radius: 6px; 
-  border: 1px solid #000;
-  background: var(--White, #FFF);
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25); 
-  
-  color: #333;
-}
+    border-radius: 6px;
+    border: 1px solid #000;
+    background: var(--White, #fff);
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 
-.or-divider {
- 
-  text-align: center;
-  flex-shrink: 0;
+    color: #333;
+  }
 
-  margin: 15px auto; 
+  .or-divider {
+    text-align: center;
+    flex-shrink: 0;
 
-  width: 15px; 
-  height: 17px;
+    margin: 15px auto;
 
-  color: #FFF;
-  font-family: "Irish Grover", cursive; 
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  
-  -webkit-text-stroke-width: 0.25px;
-  -webkit-text-stroke-color: #000;
-  text-stroke-width: 0.25px;
-  text-stroke-color: #000;  
-}
+    width: 15px;
+    height: 17px;
 
-.account-prompt{
-  margin-top: 5px;
-  margin-bottom: -5px;
+    color: #fff;
+    font-family: 'Irish Grover', cursive;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
 
-  color: #FFF;
-  font-family: "Irish Grover", cursive;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+    -webkit-text-stroke-width: 0.25px;
+    -webkit-text-stroke-color: #000;
+    text-stroke-width: 0.25px;
+    text-stroke-color: #000;
+  }
 
-  position: relative;
-  top:10px;
-  left:70px
-}
+  .account-prompt {
+    margin-top: 5px;
+    margin-bottom: -5px;
 
-.sign-in-link{
-  color: #D4862d;
-  text-decoration: underline;
-  text-decoration-style: solid;
+    color: #fff;
+    font-family: 'Irish Grover', cursive;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
 
-  font-family: "Irish Grover", cursive;
-  font-weight: 400;
-  line-height: normal;
+    position: relative;
+    top: 10px;
+    left: 70px;
+  }
 
-  position: relative;
+  .sign-in-link {
+    color: #d4862d;
+    text-decoration: underline;
+    text-decoration-style: solid;
 
+    font-family: 'Irish Grover', cursive;
+    font-weight: 400;
+    line-height: normal;
 
-}
+    position: relative;
+  }
 
-.sign-in-link:hover{
-  opacity: 0.8;
-}
-
-
-
+  .sign-in-link:hover {
+    opacity: 0.8;
+  }
 </style>
