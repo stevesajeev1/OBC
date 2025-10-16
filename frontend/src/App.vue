@@ -9,9 +9,10 @@
             </div>
             <div class="nav-links">
                 <router-link to="/" class="nav-link">Home</router-link>
-                <router-link to="/team" class="nav-link">Our Team</router-link>
+                <router-link to="/internships" class="nav-link">Internships</router-link>
+                <router-link to="/team" class="nav-link">About</router-link>
                 <router-link to="/login" class="nav-link join-now">Login</router-link>
-                <router-link to="/join" class="nav-link join-now">Join Now</router-link>
+                <router-link to="/join" class="nav-link join-now">Register</router-link>
             </div>
         </nav>
 
@@ -82,7 +83,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to right, #d4862d, #5A7CAF);
+            background: linear-gradient(90deg, #D4862D 0.01%, #5A7CAF 29.33%);
             opacity: 0;
             transition: opacity 0.6s ease;
             z-index: -1;
@@ -118,7 +119,7 @@
     /* Navbar links */
     .nav-link {
         font-family: 'Irish Grover', cursive;
-        text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         color: white;
         text-decoration: none;
         font-weight: bold;
@@ -138,12 +139,19 @@
     .join-now {
         padding: 0.3rem 0.8rem;
         border-radius: 5px;
-        transition: color 0.3s ease;
+        transition: border-color 0.3s ease, color 0.3s ease; /* Added color transition */
+        border: 2px solid #69a1b8; /* Light blue outline */
+        background-color: transparent; /* Transparent background */
     }
 
         .join-now:hover {
             color: #d4862d;
+            border-color: #d4862d; /* Changes to orange on hover */
         }
+
+    .nav-links .nav-link[href="/"] {
+        text-decoration: underline;
+    }
 
     .nav-link:hover,
     .nav-link:focus,
