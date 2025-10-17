@@ -1,6 +1,5 @@
 # utility file for helper functions used in routers/auth.py
 
-import os
 from typing import Annotated
 
 import psycopg2
