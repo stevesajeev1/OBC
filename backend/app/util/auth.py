@@ -1,9 +1,8 @@
 # utility file for helper functions used in routers/auth.py
 
-import os
 from typing import Annotated
 
-import psycopg2
+import psycopg
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -51,7 +50,7 @@ def create_user(user: DBUser):
             )
             conn.commit()
             return True
-    except psycopg2.Error as e:
+    except psycopg.Error:
         conn.rollback()
         return False
     finally:

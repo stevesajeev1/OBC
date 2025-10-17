@@ -1,6 +1,6 @@
 import os
 
-import psycopg2
+import psycopg
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
 
@@ -19,10 +19,9 @@ def get_db_connection():
             detail="DATABASE_URL environment variable is not set. Please check your server configuration.",
         )
     try:
-        # psycopg2 can connect directly using the connection URI provided by Neon.
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg.connect(DATABASE_URL)
         return conn
-    except psycopg2.OperationalError as e:
+    except psycopg.OperationalError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Could not connect to the database: {e}",
