@@ -11,7 +11,7 @@ CRON_SECRET = os.getenv("CRON_SECRET")
 router = APIRouter(prefix="/cron", tags=["cron"])
 
 
-@router.get("/")
+@router.get("/", status_code=status.HTTP_200_OK)
 async def scrape(Authorization: Annotated[str, Header()]):
     if Authorization != f"Bearer {CRON_SECRET}":
         raise HTTPException(

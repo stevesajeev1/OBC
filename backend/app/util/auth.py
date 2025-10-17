@@ -1,7 +1,6 @@
 # utility file for helper functions used in routers/auth.py
 
 import os
-from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import psycopg2
@@ -10,13 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from ..models.auth import DBUser, Token
+from ..models.auth import DBUser, Token, TokenType
 from ..util.db import get_db_connection
-
-# --- config ---
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # --- hashing ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -64,27 +58,14 @@ def create_user(user: DBUser):
         conn.close()
 
 
-def create_access_token(data: Token):
-    if JWT_SECRET_KEY is None:
-        raise Exception("JWT_SECRET_KEY is not defined")
-
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    jwt_payload = data.to_jwt_payload(expire)
-    return jwt.encode(jwt_payload, JWT_SECRET_KEY, algorithm=ALGORITHM)
-
-
 def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    if JWT_SECRET_KEY is None:
-        raise Exception("JWT_SECRET_KEY is not defined")
-
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-        jwt_token = Token.from_jwt_payload(payload)
+        jwt_token = Token.from_jwt(token, TokenType.ACCESS)
     except JWTError:
         raise credentials_exception
 
