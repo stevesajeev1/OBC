@@ -77,7 +77,7 @@
       0 0 0 2px #c28b3a;
     position: relative;
 
-    margin-top: 150px;
+    margin-top: -200px;
   }
 
   #back-button {
