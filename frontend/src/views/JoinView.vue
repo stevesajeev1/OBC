@@ -1,36 +1,43 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+
+const goBack = () => {
+  router.back()
+}
+</script>
 <template>
-  <div class="login-page">
-    <div class="login-card">
-      <router-link to="/" class="back-button"> &#9664; </router-link>
+  <div id="login-page">
+    <div id="login-card">
+      <button id="back-button" @click="goBack"> &#9664; </button>
 
-      <div class="card-content">
-        <div class="image-area">
-          <img src="/src/assets/Color Logo Round.png" alt="Orange and Blue Collar mascot" class="alligator-mascot" />
+      <div id="card-content">
+        <div id="image-area">
+          <img src="@/assets/Color Logo Round.png" alt="Orange and Blue Collar mascot" id="alligator-mascot" />
         </div>
 
-        <div class="form-area">
-          <h1 class="welcome-text">
+        <div id="form-area">
+          <h1 id="welcome-text">
             Welcome to <br />
-            <span class="orange-text">Orange</span> and <span class="blue-text">Blue</span> Collar!
+            <span id="orange-text">Orange</span> and <span id="blue-text">Blue</span> Collar!
           </h1>
 
-          <button class="google-sign-in">
-            <img src="/src/assets/google.svg" alt="Google icon" class="google-icon" />
+          <button id="google-sign-in">
+            <img src="@/assets/google.svg" alt="Google icon" id="google-icon" />
             Sign up with Google
           </button>
 
-          <p class="or-divider">or</p>
+          <p id="or-divider">or</p>
 
-          <input type="email" placeholder="Email" class="form-input" />
+          <input type="email" placeholder="Email"class="form-input" />
           <input type="password" placeholder="Password" class="form-input" />
 
-          <button class="join-button">Join Now!</button>
+          <button id="join-button">Join Now!</button>
 
-          <p class="account-prompt">
+          <p id="account-prompt">
             Already have an account?
-            <router-link to="/login" class="sign-in-link">Sign in</router-link>
+            <router-link to="/login" id="sign-in-link">Sign in</router-link>
           </p>
         </div>
       </div>
@@ -39,7 +46,7 @@
 </template>
 
 <style scoped>
-  .login-page {
+  #login-page {
     background-color: #7990b5;
     background: linear-gradient(to bottom, #7990b5 0%, #3e506e 100%);
 
@@ -52,14 +59,11 @@
 
     padding: 20;
 
-    justify-content: center;
-    align-items: flex-start;
-
     padding: 20px;
     box-sizing: border-box;
   }
 
-  .login-card {
+  #login-card {
     background-image: linear-gradient(to bottom, rgba(95, 136, 198, 0.25) 96%, #c28b3a 100%);
 
     width: 100%;
@@ -76,25 +80,31 @@
     margin-top: 150px;
   }
 
-  .back-button {
+  #back-button {
     position: absolute;
     top: 30px;
     left: 35px;
 
     font-size: 32px;
     color: #fff;
+    background: none;
+    border: none;
 
     text-decoration: none;
     cursor: pointer;
   }
 
-  .card-content {
+  .back-button:hover{
+    background: none;
+  }
+
+  #card-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  .image-area {
+  #image-area {
     flex-shrink: 0;
     width: 40%;
     display: flex;
@@ -102,7 +112,7 @@
     align-items: center;
   }
 
-  .alligator-mascot {
+  #alligator-mascot {
     width: 100%;
     max-width: 300px;
     height: auto;
@@ -110,7 +120,7 @@
     object-fit: cover;
   }
 
-  .form-area {
+  #form-area {
     flex-grow: 1;
     max-width: 500px;
     width: 50%;
@@ -118,7 +128,7 @@
     margin-right: 10px;
   }
 
-  .welcome-text {
+  #welcome-text {
     font-family: 'Irish Grover', cursive;
     color: #f7f1e3;
     font-size: 36px;
@@ -140,15 +150,15 @@
     margin-left: -10px;
   }
 
-  .orange-text {
+  #orange-text {
     color: #d4862d;
   }
 
-  .blue-text {
+  #blue-text {
     color: #1e90ff;
   }
 
-  .google-sign-in {
+  #google-sign-in {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -178,12 +188,12 @@
     background-color: #a4bde0;
   }
 
-  .google-icon {
+  #google-icon {
     height: 18px;
     width: auto;
   }
 
-  .join-button {
+  #join-button {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -212,7 +222,7 @@
     font-size: 1.05em;
   }
 
-  .join-button:hover {
+  #join-button:hover {
     background-color: #ae6c25;
   }
 
@@ -241,7 +251,7 @@
     color: #333;
   }
 
-  .or-divider {
+  #or-divider {
     text-align: center;
     flex-shrink: 0;
 
@@ -263,7 +273,7 @@
     text-stroke-color: #000;
   }
 
-  .account-prompt {
+  #account-prompt {
     margin-top: 5px;
     margin-bottom: -5px;
 
@@ -279,7 +289,7 @@
     left: 70px;
   }
 
-  .sign-in-link {
+  #sign-in-link {
     color: #d4862d;
     text-decoration: underline;
     text-decoration-style: solid;
@@ -291,7 +301,7 @@
     position: relative;
   }
 
-  .sign-in-link:hover {
+  #sign-in-link:hover {
     opacity: 0.8;
   }
 </style>
