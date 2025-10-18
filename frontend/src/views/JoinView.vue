@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+  import { useRouter } from 'vue-router';
 
-const router = useRouter()
+  const router = useRouter();
 
-const goBack = () => {
-  router.back()
-}
+  const goBack = () => {
+    router.back();
+  };
 </script>
 <template>
   <div id="login-page">
     <div id="login-card">
-      <button id="back-button" @click="goBack"> &#9664; </button>
+      <button id="back-button" @click="goBack">&#9664;</button>
 
       <div id="card-content">
         <div id="image-area">
@@ -30,7 +30,7 @@ const goBack = () => {
 
           <p id="or-divider">or</p>
 
-          <input type="email" placeholder="Email"class="form-input" />
+          <input type="email" placeholder="Email" class="form-input" />
           <input type="password" placeholder="Password" class="form-input" />
 
           <button id="join-button">Join Now!</button>
@@ -94,7 +94,7 @@ const goBack = () => {
     cursor: pointer;
   }
 
-  .back-button:hover{
+  .back-button:hover {
     background: none;
   }
 
