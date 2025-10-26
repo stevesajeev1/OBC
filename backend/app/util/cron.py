@@ -3,10 +3,10 @@ from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-from db import get_db_connection
 from dotenv import load_dotenv
 
 from ..models.cron import Listing
+from .db import get_db_connection
 
 load_dotenv()
 
