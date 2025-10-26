@@ -1,11 +1,9 @@
-# utility file for helper functions used in routers/auth.py
-
 from typing import Annotated
 
 import psycopg
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from jose import JWTError
 from passlib.context import CryptContext
 
 from ..models.auth import DBUser, Token, TokenType
@@ -25,8 +23,7 @@ def verify_password(plain_password: str, hashed_password: str):
 
 
 def get_user_from_db(username: str):
-    conn = get_db_connection()
-    try:
+    with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT username, hashed_password FROM users WHERE username = %s",
@@ -35,26 +32,20 @@ def get_user_from_db(username: str):
             user_record = cur.fetchone()
             if user_record:
                 return DBUser(username=user_record[0], hashed_password=user_record[1])
-    finally:
-        conn.close()
     return None
 
 
 def create_user(user: DBUser):
-    conn = get_db_connection()
     try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
-                (user.username, user.hashed_password),
-            )
-            conn.commit()
-            return True
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
+                    (user.username, user.hashed_password),
+                )
+        return True
     except psycopg.Error:
-        conn.rollback()
         return False
-    finally:
-        conn.close()
 
 
 def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
