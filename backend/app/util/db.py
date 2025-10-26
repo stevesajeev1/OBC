@@ -1,7 +1,8 @@
 import os
+
+import psycopg
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
-import psycopg
 from psycopg_pool import ConnectionPool
 
 load_dotenv()
@@ -11,10 +12,7 @@ if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set.")
 
 pool = ConnectionPool(
-    conninfo=DATABASE_URL,
-    min_size=1,
-    max_size=10,
-    connection_class=psycopg.Connection
+    conninfo=DATABASE_URL, min_size=1, max_size=10, connection_class=psycopg.Connection
 )
 
 

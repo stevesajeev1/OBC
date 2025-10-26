@@ -1,20 +1,21 @@
 import os
-from dotenv import load_dotenv
 from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
+from db import get_db_connection
+from dotenv import load_dotenv
 
 from ..models.cron import Listing
-from db import get_db_connection
 
 load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 headers = {
     "Accept": "application/vnd.github.raw+json",
-    "Authorization": f"Bearer {GITHUB_TOKEN}"
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
 }
+
 
 # Gets listings from the GitHub API
 def get_listings():
@@ -37,7 +38,9 @@ def assign_logos(listings: list[Listing]):
         # Get existing company logos
         with conn.cursor() as cur:
             cur.execute("SELECT company_name, url FROM logos;")
-            existing_logos = {row[0].strip().lower(): row[1] for row in cur.fetchall() if row[0]}
+            existing_logos = {
+                row[0].strip().lower(): row[1] for row in cur.fetchall() if row[0]
+            }
 
         # Assign logos, scraping if necessary
         new_logos = []
@@ -50,23 +53,26 @@ def assign_logos(listings: list[Listing]):
                 listing.company_logo = logo_url
         if new_logos:
             with conn.cursor() as cur:
-                cur.executemany("""
+                cur.executemany(
+                    """
                     INSERT INTO logos (company_name, url)
                     VALUES (%s, %s)
                     ON CONFLICT (company_name) DO NOTHING;
-                """, new_logos)
+                """,
+                    new_logos,
+                )
 
 
 # Scrapes company logo from Simplify website
 def scrape_company_logo(listing: Listing) -> str | None:
     # Only scrape companies on Simplify
-    if not listing.company_url.startswith('https://simplify.jobs/c/'):
+    if not listing.company_url.startswith("https://simplify.jobs/c/"):
         return None
 
-    soup = BeautifulSoup(requests.get(listing.company_url).text, 'html.parser')
-    img = soup.find(name='img', attrs={'alt': listing.company_name})
+    soup = BeautifulSoup(requests.get(listing.company_url).text, "html.parser")
+    img = soup.find(name="img", attrs={"alt": listing.company_name})
     if img:
-        return str(img['src'])
+        return str(img["src"])
     return None
 
 
@@ -76,7 +82,8 @@ def insert_listings(listings: list[Listing]):
         # Update listings
         conn.execute("TRUNCATE TABLE listings;")
         with conn.cursor() as cur:
-            cur.executemany("""
+            cur.executemany(
+                """
                 INSERT INTO listings (
                     id, source, company_name, title, active,
                     date_updated, is_visible, date_posted, url,
@@ -88,4 +95,6 @@ def insert_listings(listings: list[Listing]):
                     %(locations)s, %(company_url)s, %(terms)s, %(sponsorship)s,
                     %(category)s, %(faang_plus)s, %(company_logo)s
                 );
-            """, [l.model_dump() for l in listings])
+            """,
+                [l.model_dump() for l in listings],
+            )

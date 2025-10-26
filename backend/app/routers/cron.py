@@ -4,8 +4,7 @@ from typing import Annotated
 from dotenv import load_dotenv
 from fastapi import APIRouter, Header, HTTPException, status
 
-
-from ..util.cron import get_listings, assign_logos, insert_listings
+from ..util.cron import assign_logos, get_listings, insert_listings
 
 load_dotenv()
 
@@ -17,7 +16,9 @@ router = APIRouter(prefix="/cron", tags=["cron"])
 @router.get("/", status_code=status.HTTP_200_OK)
 async def scrape(Authorization: Annotated[str, Header()]):
     if Authorization != f"Bearer {CRON_SECRET}":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
 
     # Get listings
     listings = get_listings()
