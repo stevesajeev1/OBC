@@ -51,7 +51,7 @@ jobs:
 
       - name: Run isort
         working-directory: backend
-        run: isort --check-only .
+        run: isort --profile black --check-only .
 
       - name: Run Black
         working-directory: backend
