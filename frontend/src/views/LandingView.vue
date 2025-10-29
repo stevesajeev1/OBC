@@ -22,9 +22,7 @@
   </main>
 </template>
 
-<script lang="ts" setup>
-
-</script>
+<script lang="ts" setup></script>
 
 <style scoped>
   .landing-page-content {
@@ -85,7 +83,7 @@
       0 -1px 0 #000;
     display: inline-block;
     max-width: none;
-    white-space: nowrap; 
+    white-space: nowrap;
     width: 100%;
   }
 
@@ -181,7 +179,6 @@
     color: #1e90ff;
   }
 
- 
   @media (max-width: 768px) {
     .landing-page-content {
       padding: 1rem;
