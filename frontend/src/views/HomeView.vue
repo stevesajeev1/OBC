@@ -58,7 +58,12 @@
 
             <p v-if="filteredJobs.length === 0" class="no-results">No internships available.</p>
         </div>
+        <a :href="job.applyLink" target="_blank" class="apply-button">Apply Now</a>
+      </div>
+
+      <p v-if="filteredJobs.length === 0" class="no-results">No internships available.</p>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -74,6 +79,9 @@
         description: string;
         applyLink: string;
     }
+  ];
+
+  const searchQuery = ref('');
 
     const jobs: Job[] = [
         {
@@ -167,6 +175,7 @@
         const results = fuse.value.search(query);
         return results;
     });
+  });
 </script>
 
 <style scoped>
