@@ -2,24 +2,70 @@
   <div class="home-container">
     <h1><span class="orange-text">Orange</span> and <span class="blue-text">Blue</span> Collar</h1>
 
-    <!-- Search bar -->
     <input
       type="text"
       v-model="searchQuery"
-      placeholder="Search internships..."
+      placeholder="Search for open internship opportunities!"
       class="search-bar"
-      aria-label="Search internships"
+      aria-label="Search for open internship opportunities"
     />
 
-    <div class="job-listings">
-      <div v-for="job in filteredJobs" :key="job.id" class="job-card">
-        <div class="job-content">
-          <h2>{{ job.title }}</h2>
-          <p class="company">{{ job.company }} — {{ job.location }}</p>
-          <p class="posted-date">Posted: {{ job.postedDate }}</p>
-          <p class="description">{{ job.description }}</p>
+    <div class="filters-container">
+      <transition name="filters-transform" mode="out-in">
+        <div v-if="showFilters" class="category-buttons-expanded" key="filters">
+          <button
+            class="category-btn"
+            :class="{ selected: selectedCategories.includes('Software Engineering') }"
+            @click="toggleCategory('Software Engineering')"
+          >
+            Software Engineering
+          </button>
+          <button
+            class="category-btn"
+            :class="{ selected: selectedCategories.includes('Product Management') }"
+            @click="toggleCategory('Product Management')"
+          >
+            Product Management
+          </button>
+          <button
+            class="category-btn"
+            :class="{ selected: selectedCategories.includes('Data Science/AI/ML') }"
+            @click="toggleCategory('Data Science/AI/ML')"
+          >
+            Data Science/AI/ML
+          </button>
+          <button
+            class="category-btn"
+            :class="{ selected: selectedCategories.includes('Quantitative Finance') }"
+            @click="toggleCategory('Quantitative Finance')"
+          >
+            Quantitative Finance
+          </button>
+          <button
+            class="category-btn"
+            :class="{ selected: selectedCategories.includes('Hardware Engineering') }"
+            @click="toggleCategory('Hardware Engineering')"
+          >
+            Hardware Engineering
+          </button>
         </div>
-        <a :href="job.applyLink" target="_blank" class="apply-button">Apply Now</a>
+
+        <button v-else class="filters-toggle-btn" @click="showFilters = true" key="button">
+          Filters
+          <span class="toggle-icon">+</span>
+        </button>
+      </transition>
+    </div>
+
+    <div class="job-listings">
+      <div v-for="job in filteredJobs" :key="job.item.id" class="job-card">
+        <div class="job-content">
+          <h2>{{ job.item.title }}</h2>
+          <p class="company">{{ job.item.company }} — {{ job.item.location }}</p>
+          <p class="posted-date">Posted: {{ job.item.postedDate }}</p>
+          <p class="description">{{ job.item.description }}</p>
+        </div>
+        <a :href="job.item.applyLink" target="_blank" class="apply-button">Apply Now</a>
       </div>
 
       <p v-if="filteredJobs.length === 0" class="no-results">No internships available.</p>
@@ -28,7 +74,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
+  import Fuse from 'fuse.js';
 
   interface Job {
     id: number;
@@ -80,23 +127,61 @@
   ];
 
   const searchQuery = ref('');
+  const selectedCategories = ref<string[]>([]);
+  const showFilters = ref(false);
+  const fuse = ref<Fuse<Job> | null>(null);
+
+  onMounted(() => {
+    const options = {
+      keys: [
+        {
+          name: 'title',
+          weight: 2
+        },
+        {
+          name: 'company',
+          weight: 1.5
+        },
+        {
+          name: 'location',
+          weight: 1.5
+        },
+        {
+          name: 'description',
+          weight: 1
+        }
+      ],
+      threshold: 0.4,
+      includeScore: true,
+      minMatchCharLength: 1,
+      shouldSort: true
+    };
+
+    fuse.value = new Fuse(jobs, options);
+  });
+
+  const toggleCategory = (category: string) => {
+    const index = selectedCategories.value.indexOf(category);
+    if (index > -1) {
+      selectedCategories.value.splice(index, 1);
+    } else {
+      selectedCategories.value.push(category);
+    }
+  };
 
   const filteredJobs = computed(() => {
-    const query = searchQuery.value.trim().toLowerCase();
-    if (!query) return jobs;
+    const query = searchQuery.value.trim();
 
-    return jobs.filter(job => {
-      return (
-        job.title.toLowerCase().includes(query) ||
-        job.company.toLowerCase().includes(query) ||
-        job.location.toLowerCase().includes(query)
-      );
-    });
+    if (!query) return jobs.map(job => ({ item: job, refIndex: job.id - 1 }));
+
+    if (!fuse.value) return [];
+
+    const results = fuse.value.search(query);
+    return results;
   });
 </script>
 
 <style scoped>
-  /* Container */
   .home-container {
     width: 100vw;
     padding: 2rem;
@@ -105,7 +190,6 @@
     box-sizing: border-box;
   }
 
-  /* Heading */
   h1 {
     font-family: 'Irish Grover', cursive;
     text-shadow:
@@ -116,10 +200,11 @@
       -2px 0 0 #000,
       2px 0 0 #000,
       0 2px 0 #000,
-      0 -2px 0 #000;
+      0 -2px 0 #000,
+      2px 2px 4px rgba(0, 0, 0, 0.5);
     text-align: center;
     margin-bottom: 1rem;
-    font-size: 7rem;
+    font-size: 5rem;
     color: white;
   }
 
@@ -131,52 +216,225 @@
     color: #1e90ff;
   }
 
-  /* Search Bar */
   .search-bar {
     display: block;
     width: 100%;
-    max-width: 600px;
+    max-width: 1200px;
     margin: 0 auto 2rem auto;
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1.5px solid #1e90ff;
+    padding: 1rem 1.5rem;
+    font-size: 1.3rem;
+    font-family: 'Irish Grover', cursive;
+    border-radius: 4px;
+    border: 2px solid #d4862d;
     outline: none;
-    transition: border-color 0.3s ease;
+    transition:
+      border-color 0.3s ease,
+      background 0.3s ease;
+    background: transparent;
+    color: white;
+    backdrop-filter: blur(5px);
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+    text-indent: 2px;
+    box-sizing: border-box;
   }
 
-  .search-bar:focus {
-    border-color: #106fcc;
+  .search-bar::placeholder {
+    color: white;
+    font-family: 'Irish Grover', cursive;
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+    text-indent: 8px;
   }
 
-  /* Job Listings Container — vertical layout */
-  .job-listings {
+  .search-bar:focus,
+  .search-bar:hover {
+    border-color: #d4862d;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .filters-container {
+    width: 60%;
+    margin: 0 auto 2rem auto;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+  }
+
+  .filters-transform-enter-active,
+  .filters-transform-leave-active {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .filters-transform-enter-from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .filters-transform-enter-to {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .filters-transform-leave-from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .filters-transform-leave-to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .filters-toggle-btn {
+    padding: 0.7rem 2rem;
+    background: transparent;
+    border: 2px solid #d4862d;
+    border-radius: 4px;
+    color: white;
+    font-family: 'Irish Grover', cursive;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+  }
+
+  .filters-toggle-btn:hover {
+    background: rgba(212, 134, 45, 0.2);
+    color: white;
+  }
+
+  .toggle-icon {
+    font-weight: bold;
+    font-size: 1rem;
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+  }
+
+  .category-buttons-expanded {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 2px solid #d4862d;
+  }
+
+  .category-btn {
+    padding: 0.7rem 0.4rem;
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: 'Irish Grover', cursive;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-right: 2px solid #d4862d;
+    text-shadow:
+      -1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px -1px 0 #000,
+      1px 1px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000;
+  }
+
+  .category-btn:last-child {
+    border-right: none;
+  }
+
+  .category-btn:hover {
+    background: rgba(212, 134, 45, 0.2);
+    color: white;
+  }
+
+  .category-btn.selected {
+    background: #d4862d;
+    color: white;
+  }
+
+  .job-listings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     padding: 2rem 0;
-    width: 100%;
+    width: 60%;
+    margin: 0 auto;
     box-sizing: border-box;
-    overflow: hidden;
+    align-items: stretch;
   }
 
-  /* Job Card */
   .job-card {
     width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-    background: #003366;
-    border-radius: 10px;
-    padding: 2rem;
-    padding-bottom: 3.5rem; /* extra space for button */
+    background: linear-gradient(to bottom, #2645a3, #0e1a3d);
+    border-radius: 6px;
+    padding: 1.5rem;
+    padding-bottom: 3rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-    transition: transform 0.2s ease;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     color: white;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     position: relative;
+    min-height: 250px;
+    overflow: hidden;
+  }
+
+  .job-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(163, 102, 38, 0.5) 0%, rgba(61, 14, 14, 0.5) 100%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+    border-radius: 6px;
+  }
+
+  .job-card:hover::before {
+    opacity: 1;
+  }
+
+  .job-content,
+  .apply-button {
+    position: relative;
+    z-index: 1;
   }
 
   .job-card:hover {
@@ -184,13 +442,13 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   }
 
-  /* Job Content */
-  .job-content {
-    display: flex;
-    flex-direction: column;
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-style: italic;
+    color: #cce0ff;
   }
 
-  /* Job Card Text */
   h2 {
     margin: 0 0 0.5rem 0;
     font-size: 1.25rem;
@@ -215,7 +473,6 @@
     color: #ddeeff;
   }
 
-  /* Apply Button */
   .apply-button {
     position: absolute;
     bottom: 1.5rem;
@@ -226,18 +483,30 @@
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    transition: background-color 0.3s ease;
+  }
+
+  .job-card:hover .apply-button:not(:hover) {
+    background-color: #a66a26;
+    transition: background-color 0.6s ease;
   }
 
   .apply-button:hover {
-    background-color: #106fcc;
+    background-color: #734d22;
+    transition: background-color 0.25s ease;
   }
 
-  /* No results */
-  .no-results {
-    flex: 1 0 100%;
-    text-align: center;
-    font-style: italic;
-    color: #cce0ff;
+  @media (max-width: 768px) {
+    .filters-container {
+      width: 90%;
+    }
+
+    .category-buttons-expanded {
+      grid-template-columns: 1fr;
+    }
+
+    .job-listings {
+      width: 90%;
+      grid-template-columns: 1fr;
+    }
   }
 </style>
