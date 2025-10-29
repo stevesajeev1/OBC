@@ -1,6 +1,5 @@
 ﻿<template>
     <div class="app-container">
-        <!-- Navbar -->
         <nav class="navbar">
             <div class="logo-container">
                 <router-link to="/">
@@ -15,26 +14,20 @@
                 <router-link to="/join" class="nav-link join-now">Register</router-link>
             </div>
         </nav>
-
-        <!-- Routed Views Render Here -->
         <router-view />
     </div>
 </template>
 
 <script lang="ts" setup>
-    // No logic needed here
 </script>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
-
-    /* Override job listings font separately */
     .job-listings,
     .job-listings * {
         font-family: Verdana;
     }
 
-    /* Reset and base layout */
     html,
     body,
     #app {
@@ -48,22 +41,19 @@
         color: black;
     }
 
-    /* Inherit box-sizing globally */
     *,
     *::before,
     *::after {
         box-sizing: inherit;
     }
 
-    /* Page wrapper */
     .app-container {
         min-height: 100vh;
         width: 100%;
         color: black;
-        padding-top: 0px; /* space for fixed navbar */
+        padding-top: 0px; 
     }
 
-    /* Navbar — base background is blue, gradient fades in on hover */
     .navbar {
         position: fixed;
         top: 0;
@@ -82,7 +72,6 @@
         position: relative;
     }
 
-        /* Gradient overlay */
         .navbar::before {
             content: '';
             position: absolute;
@@ -93,26 +82,26 @@
             z-index: -1;
         }
 
-        /* On hover, reveal gradient */
+
         .navbar:hover::before {
             opacity: 1;
         }
 
-    /* Logo container */
+
     .logo-container {
         display: flex;
         align-items: center;
         height: 100%;
     }
 
-    /* Logo image */
+
     .logo {
         height: 160px;
         width: auto;
         object-fit: contain;
     }
 
-    /* Nav links container */
+ 
     .nav-links {
         display: flex;
         gap: 2rem;
@@ -120,7 +109,7 @@
         user-select: none;
     }
 
-    /* Navbar links */
+
     .nav-link {
         font-family: 'Irish Grover', cursive;
         text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -140,18 +129,18 @@
             opacity: 0.8;
         }
 
-    /* "Join Now" and "Login" button style */
+
     .join-now {
         padding: 0.3rem 0.8rem;
         border-radius: 5px;
-        transition: border-color 0.3s ease, color 0.3s ease; /* Added color transition */
-        border: 2px solid #69a1b8; /* Light blue outline */
-        background-color: transparent; /* Transparent background */
+        transition: border-color 0.3s ease, color 0.3s ease; 
+        border: 2px solid #69a1b8; 
+        background-color: transparent; 
     }
 
         .join-now:hover {
             color: #d4862d;
-            border-color: #d4862d; /* Changes to orange on hover */
+            border-color: #d4862d;
         }
 
     .nav-link.router-link-active::after {

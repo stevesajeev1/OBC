@@ -2,17 +2,14 @@
     <div class="home-container">
         <h1><span class="orange-text">Orange</span> and <span class="blue-text">Blue</span> Collar</h1>
 
-        <!-- Search bar -->
         <input type="text"
                v-model="searchQuery"
                placeholder="Search for open internship opportunities!"
                class="search-bar"
                aria-label="Search for open internship opportunities" />
 
-        <!-- Filters Container -->
         <div class="filters-container">
             <transition name="filters-transform" mode="out-in">
-                <!-- Filter options when expanded -->
                 <div v-if="showFilters" class="category-buttons-expanded" key="filters">
                     <button class="category-btn"
                             :class="{ selected: selectedCategories.includes('Software Engineering') }"
@@ -41,7 +38,6 @@
                     </button>
                 </div>
 
-                <!-- Filter button when collapsed -->
                 <button v-else class="filters-toggle-btn" @click="showFilters = true" key="button">
                     Filters
                     <span class="toggle-icon">+</span>
@@ -214,19 +210,15 @@
         background: transparent;
         color: white;
         backdrop-filter: blur(5px);
-        /* Text outline for better readability */
         text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
-        /* Fix text cutoff */
-        text-indent: 2px; /* Add space from left edge */
-        box-sizing: border-box; /* Ensure padding is included in width */
+        text-indent: 2px; 
+        box-sizing: border-box; 
     }
 
         .search-bar::placeholder {
             color: white;
             font-family: 'Irish Grover', cursive;
-            /* Text outline for placeholder text */
             text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
-            /* Fix placeholder positioning */
             text-indent: 8px;
         }
 
@@ -273,7 +265,7 @@
         background: transparent;
         border: 2px solid #d4862d;
         border-radius: 4px;
-        color: white; /* Changed from rgba(255, 255, 255, 0.75) to white */
+        color: white;
         font-family: 'Irish Grover', cursive;
         font-size: 0.9rem;
         cursor: pointer;
@@ -281,7 +273,6 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        /* Text outline for better readability */
         text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
     }
 
@@ -295,7 +286,6 @@
     .toggle-icon {
         font-weight: bold;
         font-size: 1rem;
-        /* Text outline for the toggle icon */
         text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
     }
 
@@ -313,13 +303,12 @@
         padding: 0.7rem 0.4rem;
         background: transparent;
         border: none;
-        color: white; /* Changed from rgba(255, 255, 255, 0.75) to white */
+        color: white;
         font-family: 'Irish Grover', cursive;
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.3s ease;
         border-right: 2px solid #d4862d;
-        /* Text outline for better readability */
         text-shadow: -1px -1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
     }
 
@@ -435,13 +424,11 @@
         font-weight: bold;
     }
 
-    /* Orange when job card is hovered but apply button is not */
     .job-card:hover .apply-button:not(:hover) {
         background-color: #a66a26;
         transition: background-color 0.6s ease;
     }
 
-    /* Dark brown when apply button is hovered (regardless of job card hover) */
     .apply-button:hover {
         background-color: #734d22;
         transition: background-color 0.25s ease;
