@@ -21,6 +21,7 @@ class User(BaseModel):
     """basic user model"""
 
     username: str
+    admin: bool
 
 
 class DBUser(User):

@@ -29,7 +29,9 @@ def register_user(
 
     hashed_password = get_password_hash(form_data.password)
 
-    new_user = DBUser(username=form_data.username, hashed_password=hashed_password)
+    new_user = DBUser(
+        username=form_data.username, hashed_password=hashed_password, admin=False
+    )
 
     user_created = create_user(new_user)
 

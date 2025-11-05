@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
@@ -289,7 +290,7 @@ def classifyFaangPlus(job):
 class Listing(BaseModel):
     source: str
     company_name: str
-    id: str
+    id: UUID
     title: str
     active: bool
     date_updated: datetime
@@ -305,7 +306,7 @@ class Listing(BaseModel):
     company_logo: str | None = None
 
     @staticmethod
-    def from_json(raw_listing):
+    def from_json(raw_listing: dict):
         parsed_json = raw_listing
         parsed_json["date_posted"] = datetime.fromtimestamp(
             raw_listing.get("date_posted", 0), tz=pst
@@ -316,3 +317,24 @@ class Listing(BaseModel):
         parsed_json["category"] = classifyJobCategory(raw_listing)
         parsed_json["faang_plus"] = classifyFaangPlus(raw_listing)
         return Listing.model_validate(parsed_json)
+
+    @classmethod
+    def from_tuple(cls, tuple: tuple):
+        return cls(
+            id=tuple[0],
+            source=tuple[1],
+            company_name=tuple[2],
+            title=tuple[3],
+            active=tuple[4],
+            date_updated=tuple[5],
+            is_visible=tuple[6],
+            date_posted=tuple[7],
+            url=tuple[8],
+            locations=tuple[9] if isinstance(tuple[9], list) else [],
+            company_url=tuple[10],
+            terms=tuple[11] if isinstance(tuple[11], list) else [],
+            sponsorship=tuple[12],
+            category=tuple[13],
+            faang_plus=tuple[14],
+            company_logo=tuple[15],
+        )
