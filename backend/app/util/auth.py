@@ -26,12 +26,16 @@ def get_user_from_db(username: str):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT username, hashed_password FROM users WHERE username = %s",
+                "SELECT username, hashed_password, admin FROM users WHERE username = %s",
                 (username,),
             )
             user_record = cur.fetchone()
             if user_record:
-                return DBUser(username=user_record[0], hashed_password=user_record[1])
+                return DBUser(
+                    username=user_record[0],
+                    hashed_password=user_record[1],
+                    admin=user_record[2],
+                )
     return None
 
 
@@ -40,8 +44,8 @@ def create_user(user: DBUser):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO users (username, hashed_password) VALUES (%s, %s)",
-                    (user.username, user.hashed_password),
+                    "INSERT INTO users (username, hashed_password, admin) VALUES (%s, %s, %s)",
+                    (user.username, user.hashed_password, user.admin),
                 )
         return True
     except psycopg.Error:

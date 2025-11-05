@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from uuid import uuid4
 
 import requests
 from bs4 import BeautifulSoup
@@ -28,8 +29,21 @@ def get_listings():
         if r.ok:
             raw_listings = r.json()
             listings = [Listing.from_json(listing) for listing in raw_listings]
+            listings = ensure_unique_ids(listings)
             return listings
     assert False, "No listings found"
+
+
+# Ensures each listing has a unique ID
+def ensure_unique_ids(listings: list[Listing]):
+    unique_ids = set()
+    unique_listings = []
+    for listing in listings:
+        if listing.id in unique_ids:
+            listing.id = uuid4()
+        unique_ids.add(listing.id)
+        unique_listings.append(listing)
+    return unique_listings
 
 
 # Assigns company logos to listings
