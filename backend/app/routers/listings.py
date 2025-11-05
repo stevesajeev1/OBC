@@ -39,11 +39,11 @@ def get_listings(request: Request, page: int = 0, pageSize: int = 100):
 
 @router.delete("/{listing_id}", status_code=status.HTTP_200_OK)
 def delete_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)]):
-    # if not user.admin:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Need to be administrator to delete listings",
-    #     )
+    if not user.admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Need to be administrator to delete listings",
+        )
 
     if not delete_listing_in_db(listing_id):
         raise HTTPException(
