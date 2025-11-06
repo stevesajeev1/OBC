@@ -3,8 +3,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from ..models.api import PaginatedResponse
 from ..models.auth import User
-from ..models.listings import ListingsResponse
+from ..models.listings import Listing
 from ..util.auth import get_user
 from ..util.listings import delete_listing_in_db, get_listings_from_db
 
@@ -13,28 +14,12 @@ router = APIRouter(prefix="/listings", tags=["Listings"])
 
 
 # --- api endpoints ---
-@router.get("/", response_model=ListingsResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/", response_model=PaginatedResponse[Listing], status_code=status.HTTP_200_OK
+)
 def get_listings(request: Request, page: int = 0, pageSize: int = 100):
     listings = get_listings_from_db()
-    count = len(listings)
-
-    start = page * pageSize
-    end = start + pageSize
-
-    base_url = str(request.url).split("?")[0]
-    next_url, prev_url = None, None
-    if end < count:
-        next_url = f"{base_url}?page={page + 1}&pageSize={pageSize}"
-    if page > 0:
-        prev_url = f"{base_url}?page={page - 1}&pageSize={pageSize}"
-
-    response = {
-        "count": count,
-        "next": next_url,
-        "previous": prev_url,
-        "results": listings[start:end],
-    }
-    return ListingsResponse.model_validate(response)
+    return PaginatedResponse.paginate(listings, page, pageSize, str(request.url))
 
 
 @router.delete("/{listing_id}", status_code=status.HTTP_200_OK)

@@ -83,10 +83,3 @@ class Listing(BaseModel):
             self.faang_plus,
             self.company.id,
         )
-
-
-class ListingsResponse(BaseModel):
-    count: int
-    next: str | None
-    previous: str | None
-    results: list[Listing]
