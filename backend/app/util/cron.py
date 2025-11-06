@@ -6,7 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-from ..models.cron import Listing
+from ..models.companies import Company
+from ..models.listings import Listing
+from .companies import get_companies_from_db
 from .db import get_db_connection
 
 load_dotenv()
@@ -16,6 +18,286 @@ headers = {
     "Accept": "application/vnd.github.raw+json",
     "Authorization": f"Bearer {GITHUB_TOKEN}",
 }
+
+
+# Classifies a listing into a category
+def classifyJobCategory(job):
+    # Always classify by title for better accuracy, ignore existing category
+    title = job.get("title", "").lower()
+
+    # Filter out IT technical support roles that aren't really tech internships
+    if any(
+        term in title
+        for term in [
+            "it technical intern",
+            "it technician",
+            "it support",
+            "technical support intern",
+            "help desk",
+            "desktop support",
+            "it help desk",
+            "computer support",
+            "security operations",
+            "field operations",
+            "information technology",
+        ]
+    ):
+        return "IT Technical Support"
+
+    # Hardware (first priority) - expanded keywords
+    if any(
+        term in title
+        for term in [
+            "hardware",
+            "embedded",
+            "fpga",
+            "circuit",
+            "chip",
+            "silicon",
+            "asic",
+            "robotics",
+            "firmware",
+            "manufactur",
+            "electrical",
+            "mechanical",
+            "systems engineer",
+            "test engineer",
+            "validation",
+            "verification",
+            "pcb",
+            "analog",
+            "digital",
+            "signal",
+            "power",
+            "rf",
+            "antenna",
+        ]
+    ):
+        return "Hardware Engineering"
+
+    # Quant (second priority) - expanded keywords
+    elif any(
+        term in title
+        for term in [
+            "quant",
+            "quantitative",
+            "trading",
+            "finance",
+            "investment",
+            "financial",
+            "risk",
+            "portfolio",
+            "derivatives",
+            "algorithmic trading",
+            "market",
+            "capital",
+            "equity",
+            "fixed income",
+            "credit",
+        ]
+    ):
+        return "Quantitative Finance"
+
+    # Data Science (third priority) - expanded keywords
+    elif any(
+        term in title
+        for term in [
+            "data science",
+            "artificial intelligence",
+            "data scientist",
+            "ai",
+            "machine learning",
+            "ml",
+            "data analytics",
+            "data analyst",
+            "research eng",
+            "nlp",
+            "computer vision",
+            "research sci",
+            "data eng",
+            "analytics",
+            "statistician",
+            "modeling",
+            "algorithms",
+            "deep learning",
+            "pytorch",
+            "tensorflow",
+            "pandas",
+            "numpy",
+            "sql",
+            "etl",
+            "pipeline",
+            "big data",
+            "spark",
+            "hadoop",
+        ]
+    ):
+        return "Data Science, AI & Machine Learning"
+
+    # Product (fourth priority) - check before Software to catch "Software Product Management" roles
+    elif any(
+        term in title
+        for term in [
+            "product manag",
+            "product analyst",
+            "apm",
+            "associate product",
+            "product owner",
+            "product design",
+            "product marketing",
+            "product strategy",
+            "business analyst",
+            "program manag",
+            "project manag",
+        ]
+    ) or (
+        "product" in title
+        and any(
+            word in title for word in ["analyst", "manager", "associate", "coordinator"]
+        )
+    ):
+        return "Product Management"
+
+    # Software Engineering (fifth priority) - greatly expanded keywords
+    elif any(
+        term in title
+        for term in [
+            "software",
+            "engineer",
+            "developer",
+            "dev",
+            "programming",
+            "coding",
+            "fullstack",
+            "full-stack",
+            "full stack",
+            "frontend",
+            "front end",
+            "front-end",
+            "backend",
+            "back end",
+            "back-end",
+            "mobile",
+            "web",
+            "app",
+            "application",
+            "platform",
+            "infrastructure",
+            "cloud",
+            "devops",
+            "sre",
+            "site reliability",
+            "systems",
+            "network",
+            "security",
+            "cybersecurity",
+            "qa",
+            "quality assurance",
+            "test",
+            "automation",
+            "ci/cd",
+            "deployment",
+            "kubernetes",
+            "docker",
+            "aws",
+            "azure",
+            "gcp",
+            "api",
+            "microservices",
+            "database",
+            "java",
+            "python",
+            "javascript",
+            "react",
+            "node",
+            "golang",
+            "rust",
+            "c++",
+            "c#",
+            ".net",
+            "ios",
+            "android",
+            "flutter",
+            "technical",
+            "technology",
+            "tech",
+            "coding",
+            "programming",
+            "sde",
+            "swe",
+        ]
+    ):
+        return "Software Engineering"
+
+    # Return None for jobs that don't fit any category (will be filtered out)
+    else:
+        return "Software Engineering"
+
+
+# Classifies a listing as FAANG+
+def classifyFaangPlus(job):
+    FAANG_PLUS = {
+        "airbnb",
+        "adobe",
+        "amazon",
+        "amd",
+        "anthropic",
+        "apple",
+        "asana",
+        "atlassian",
+        "bytedance",
+        "cloudflare",
+        "coinbase",
+        "crowdstrike",
+        "databricks",
+        "datadog",
+        "doordash",
+        "dropbox",
+        "duolingo",
+        "figma",
+        "google",
+        "ibm",
+        "instacart",
+        "intel",
+        "linkedin",
+        "lyft",
+        "meta",
+        "microsoft",
+        "netflix",
+        "notion",
+        "nvidia",
+        "openai",
+        "oracle",
+        "palantir",
+        "paypal",
+        "perplexity",
+        "pinterest",
+        "ramp",
+        "reddit",
+        "rippling",
+        "robinhood",
+        "roblox",
+        "salesforce",
+        "samsara",
+        "servicenow",
+        "shopify",
+        "slack",
+        "snap",
+        "snapchat",
+        "spacex",
+        "splunk",
+        "snowflake",
+        "stripe",
+        "square",
+        "tesla",
+        "tinder",
+        "tiktok",
+        "uber",
+        "visa",
+        "waymo",
+        "x",
+    }
+    return job.get("company_name", "").lower() in FAANG_PLUS
 
 
 # Gets listings from the GitHub API
@@ -37,7 +319,7 @@ def get_listings():
 # Ensures each listing has a unique ID
 def ensure_unique_ids(listings: list[Listing]):
     unique_ids = set()
-    unique_listings = []
+    unique_listings: list[Listing] = []
     for listing in listings:
         if listing.id in unique_ids:
             listing.id = uuid4()
@@ -46,69 +328,93 @@ def ensure_unique_ids(listings: list[Listing]):
     return unique_listings
 
 
-# Assigns company logos to listings
-def assign_logos(listings: list[Listing]):
-    with get_db_connection() as conn:
-        # Get existing company logos
-        with conn.cursor() as cur:
-            cur.execute("SELECT company_name, url FROM logos;")
-            existing_logos = {
-                row[0].strip().lower(): row[1] for row in cur.fetchall() if row[0]
-            }
+# Assigns companies to listings
+def assign_companies(listings: list[Listing]):
+    existing_companies = get_companies_from_db()
+    existing_map = {c.name.strip().lower(): c for c in existing_companies}
 
-        # Assign logos, scraping if necessary
-        new_logos = []
-        for listing in listings:
-            company_key = listing.company_name.strip().lower()
-            if company_key not in existing_logos:
-                logo_url = scrape_company_logo(listing)
-                new_logos.append((listing.company_name, logo_url))
-                existing_logos[company_key] = logo_url
-                listing.company_logo = logo_url
-        if new_logos:
-            with conn.cursor() as cur:
-                cur.executemany(
-                    """
-                    INSERT INTO logos (company_name, url)
-                    VALUES (%s, %s)
-                    ON CONFLICT (company_name) DO NOTHING;
-                """,
-                    new_logos,
-                )
+    # Scrape new logos
+    new_companies: list[Company] = []
+    for listing in listings:
+        key = listing.company.name.strip().lower()
+        if key not in existing_map:
+            scrape_company_logo(listing.company)
+            new_companies.append(listing.company)
+            existing_map[key] = listing.company
+    if new_companies:
+        import json
+
+        with open("data.json", "w") as f:
+            json.dump([c.to_tuple() for c in new_companies], f, indent=4)
+        ids = insert_companies(new_companies)
+        for company, id in zip(new_companies, ids):
+            company.id = id
+            key = company.name.strip().lower()
+            existing_map[key] = company
+
+    # Assign companies
+    for listing in listings:
+        key = listing.company.name.strip().lower()
+        listing.company = existing_map[key]
 
 
 # Scrapes company logo from Simplify website
-def scrape_company_logo(listing: Listing) -> str | None:
+def scrape_company_logo(company: Company) -> str | None:
     # Only scrape companies on Simplify
-    if not listing.company_url.startswith("https://simplify.jobs/c/"):
+    if not company.url.startswith("https://simplify.jobs/c/"):
         return None
 
-    soup = BeautifulSoup(requests.get(listing.company_url).text, "html.parser")
-    img = soup.find(name="img", attrs={"alt": listing.company_name})
+    soup = BeautifulSoup(requests.get(company.url).text, "html.parser")
+    img = soup.find(name="img", attrs={"alt": company.name})
     if img:
-        return str(img["src"])
-    return None
+        company.logo_url = str(img["src"])
+
+
+# Inserts companies into DB
+def insert_companies(companies: list[Company]):
+    with get_db_connection() as conn:
+        # Update companies
+        with conn.cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO companies (name, url, logo_url)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (name) DO NOTHING;
+            """,
+                [c.to_tuple() for c in companies],
+            )
+
+            company_names = [c.name for c in companies]
+            cur.execute(
+                """
+                SELECT id, name
+                FROM companies
+                WHERE name = ANY(%s);
+                """,
+                (company_names,),
+            )
+            id_map = {row[1].strip().lower(): row[0] for row in cur.fetchall()}
+            return [id_map[c.name.strip().lower()] for c in companies]
 
 
 # Inserts listings into DB
 def insert_listings(listings: list[Listing]):
     with get_db_connection() as conn:
-        # Update listings
+        # Optionally truncate table
         conn.execute("TRUNCATE TABLE listings;")
         with conn.cursor() as cur:
             cur.executemany(
                 """
                 INSERT INTO listings (
-                    id, source, company_name, title, active,
-                    date_updated, is_visible, date_posted, url,
-                    locations, company_url, terms, sponsorship,
-                    category, faang_plus, company_logo
+                    id, source, title, active, date_updated, is_visible,
+                    date_posted, url, locations, terms, sponsorship,
+                    category, faang_plus, company_id
                 ) VALUES (
-                    %(id)s, %(source)s, %(company_name)s, %(title)s, %(active)s,
-                    %(date_updated)s, %(is_visible)s, %(date_posted)s, %(url)s,
-                    %(locations)s, %(company_url)s, %(terms)s, %(sponsorship)s,
-                    %(category)s, %(faang_plus)s, %(company_logo)s
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s
                 );
-            """,
-                [l.model_dump() for l in listings],
+                """,
+                [l.to_tuple() for l in listings],
             )
+        conn.commit()
