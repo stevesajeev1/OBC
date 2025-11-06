@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from ..models.cron import Listing
+from ..models.listings import Listing
 from ..util.db import get_db_connection
 
 
@@ -10,12 +10,14 @@ def get_listings_from_db():
             cur.execute(
                 """
                 SELECT
-                    id, source, company_name, title, active,
-                    date_updated, is_visible, date_posted, url,
-                    locations, company_url, terms, sponsorship,
-                    category, faang_plus, company_logo
-                FROM listings;
-            """
+                    l.id, l.source, l.title, l.active,
+                    l.date_updated, l.is_visible, l.date_posted, l.url,
+                    l.locations, l.terms, l.sponsorship,
+                    l.category, l.faang_plus,
+                    c.id AS company_id, c.name, c.url, c.logo_url
+                FROM listings l
+                LEFT JOIN companies c ON l.company_id = c.id;
+                """
             )
 
             rows = cur.fetchall()

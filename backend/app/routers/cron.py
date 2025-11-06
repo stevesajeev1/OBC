@@ -4,7 +4,7 @@ from typing import Annotated
 from dotenv import load_dotenv
 from fastapi import APIRouter, Header, HTTPException, status
 
-from ..util.cron import assign_logos, get_listings, insert_listings
+from ..util.cron import assign_companies, get_listings, insert_listings
 
 load_dotenv()
 
@@ -23,6 +23,6 @@ async def scrape(Authorization: Annotated[str, Header()]):
     # Get listings
     listings = get_listings()
     # Assign company logos to listings
-    assign_logos(listings)
+    assign_companies(listings)
     # Insert listings into DB
     insert_listings(listings)

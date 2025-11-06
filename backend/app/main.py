@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import auth, cron, greeting, listings, users
+from .routers import auth, companies, cron, greeting, listings, users
 from .util.origin import get_allowed_origin
 
 app = FastAPI()
@@ -20,6 +20,7 @@ app.include_router(greeting.router)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(listings.router)
+app.include_router(companies.router)
 
 
 @app.get("/")
