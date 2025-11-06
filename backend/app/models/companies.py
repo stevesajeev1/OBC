@@ -13,3 +13,10 @@ class Company(BaseModel):
 
     def to_tuple(self):
         return (self.name, self.url, self.logo_url)
+
+
+class CompaniesResponse(BaseModel):
+    count: int
+    next: str | None
+    previous: str | None
+    results: list[Company]
