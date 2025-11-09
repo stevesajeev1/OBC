@@ -22,6 +22,7 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
+
   .job-listings,
   .job-listings * {
     font-family: Verdana;
@@ -142,7 +143,7 @@
     border-color: #d4862d;
   }
 
-  .nav-link.router-link-active::after {
+  .nav-link:not(.join-now).router-link-active::after {
     content: '';
     position: absolute;
     top: 37px;
@@ -157,6 +158,12 @@
       1px -1px 0 #000,
       -1px 1px 0 #000,
       1px 1px 0 #000;
+  }
+
+  .join-now.router-link-active {
+    color: #d4862d !important;
+    border-color: #d4862d !important;
+    background-color: rgba(212, 134, 45, 0.1) !important;
   }
 
   @keyframes underlineGrow {
