@@ -1,6 +1,6 @@
 import psycopg
 from ..util.db import get_db_connection
-from ..models.profile import ProfilePublic, ProfileUpdate, Internship
+from ..models.profile import Profile, ProfileUpdate, Internship
 
 
 # profile READ functions
@@ -39,7 +39,7 @@ def get_raw_profile_data(username: str):
     return None
 
 
-def get_public_profile(username:str):
+def get_valid_profile(username:str):
     """gets a users profile and check if complete"""
     profile_data = get_raw_profile_data(username)
 
@@ -47,8 +47,8 @@ def get_public_profile(username:str):
         return None
     
     try:
-        public_profile = ProfilePublic(**profile_data)
-        return public_profile
+        profile = Profile(**profile_data)
+        return profile
     except Exception:
         # means profile is not complete
         return None
@@ -104,8 +104,25 @@ def update_profile(username:str, profile_update:ProfileUpdate):
             return get_raw_profile_data(username)
     except psycopg.Error as e:
         conn.rollback()
-        print(f"Database error in update_profile_in_db: {e}")
+        print(f"Database error in update_profile: {e}")
         return None
+    finally:
+        if conn:
+            conn.close()
+
+
+def delete_user(username:str):
+    """deletes user from db"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM users WHERE username = %s", (username,))
+            conn.commit()
+            return True
+    except psycopg.Error as e:
+        conn.rollback()
+        print(f"Database error in delete_user: {e}")
+        return False
     finally:
         if conn:
             conn.close()
