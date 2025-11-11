@@ -1,14 +1,15 @@
 import psycopg
-from ..util.db import get_db_connection
-from ..models.profile import Profile, ProfileUpdate, Internship
 
+from ..models.profile import Internship, Profile, ProfileUpdate
+from ..util.db import get_db_connection
 
 # profile READ functions
+
 
 def get_raw_profile_data(username: str):
     """gets the raw profile data as a dict."""
 
-    conn = get_db_connection();
+    conn = get_db_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
@@ -23,11 +24,11 @@ def get_raw_profile_data(username: str):
             record = cur.fetchone()
             if record:
                 return {
-                    "username": record[0], 
-                    "full_name": record[1], 
+                    "username": record[0],
+                    "full_name": record[1],
                     "major": record[2],
-                    "grad_year": record[3], 
-                    "linkedin_link": record[4], 
+                    "grad_year": record[3],
+                    "linkedin_link": record[4],
                     "bio": record[5],
                     "prev_internships": record[6],
                 }
@@ -39,31 +40,30 @@ def get_raw_profile_data(username: str):
     return None
 
 
-def get_valid_profile(username:str):
+def get_valid_profile(username: str):
     """gets a users profile and check if complete"""
     profile_data = get_raw_profile_data(username)
 
     if not profile_data:
         return None
-    
+
     try:
         profile = Profile(**profile_data)
         return profile
     except Exception:
         # means profile is not complete
         return None
-    
 
 
 # profile WRITE functions
-def update_profile(username:str, profile_update:ProfileUpdate):
+def update_profile(username: str, profile_update: ProfileUpdate):
     """updates a user profile in the db"""
 
     # get current data
     current_data = get_raw_profile_data(username)
     if not current_data:
         return None
-    
+
     # make update model from current data
     current_profile = ProfileUpdate(**current_data)
 
@@ -92,14 +92,18 @@ def update_profile(username:str, profile_update:ProfileUpdate):
                     updated_profile.full_name,
                     updated_profile.major,
                     updated_profile.grad_year,
-                    str(updated_profile.linkedin_link) if updated_profile.linkedin_link else None,
+                    (
+                        str(updated_profile.linkedin_link)
+                        if updated_profile.linkedin_link
+                        else None
+                    ),
                     updated_profile.bio,
-                    internships_list, 
+                    internships_list,
                     username,
                 ),
             )
             conn.commit()
-            
+
             # After updating, fetch the new profile data to return it
             return get_raw_profile_data(username)
     except psycopg.Error as e:
@@ -111,7 +115,7 @@ def update_profile(username:str, profile_update:ProfileUpdate):
             conn.close()
 
 
-def delete_user(username:str):
+def delete_user(username: str):
     """deletes user from db"""
     conn = get_db_connection()
     try:
