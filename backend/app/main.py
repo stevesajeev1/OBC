@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import auth, companies, cron, greeting, listings, users, images
+from .routers import auth, companies, cron, greeting, images, listings, users
 from .util.origin import get_allowed_origin
 
 app = FastAPI()

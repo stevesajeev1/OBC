@@ -1,9 +1,11 @@
-from fastapi import UploadFile, HTTPException, status
-from PIL import Image
 from io import BytesIO
+
+from fastapi import HTTPException, UploadFile, status
+from PIL import Image
 from vercel.blob import AsyncBlobClient, UploadProgressEvent
 
-ALLOWED_IMAGE_TYPES = set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
+ALLOWED_IMAGE_TYPES = set(["image/jpeg", "image/jpg", "image/png", "image/webp"])
+
 
 class ImageMiddleware:
     def __init__(self, max_file_size: float):
@@ -23,7 +25,7 @@ class ImageMiddleware:
                 im.verify()
             with Image.open(file.file) as im:
                 buf = BytesIO()
-                im.save(buf, 'WEBP')
+                im.save(buf, "WEBP")
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -45,12 +47,7 @@ async def put_object(object: BytesIO, bucket: str, key: str):
     path = f"{bucket}/{key}.webp"
 
     client = AsyncBlobClient()
-    blob = await client.put(
-        path,
-        object,
-        access="public",
-        overwrite=True
-    )
+    blob = await client.put(path, object, access="public", overwrite=True)
     return blob.url
 
 
