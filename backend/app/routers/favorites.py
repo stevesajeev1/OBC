@@ -20,6 +20,7 @@ router = APIRouter(prefix="/favorites", tags=["Favorites"])
 @router.post("/{listing_id}", status_code=status.HTTP_201_CREATED)
 def favorite_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)]):
     user_id = user.id
+    assert user_id is not None
 
     if not save_favorite_to_db(user_id, listing_id):
         raise HTTPException(
@@ -31,6 +32,8 @@ def favorite_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)])
 @router.get("/", response_model=list[Listing], status_code=status.HTTP_200_OK)
 def get_favorites(user: Annotated[User, Depends(get_user)]):
     user_id = user.id
+    assert user_id is not None
+
     favorites = get_favorites_from_db(user_id)
     return favorites
 
@@ -38,6 +41,7 @@ def get_favorites(user: Annotated[User, Depends(get_user)]):
 @router.delete("/{listing_id}", status_code=status.HTTP_200_OK)
 def unfavorite_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)]):
     user_id = user.id
+    assert user_id is not None
 
     if not delete_favorite_from_db(user_id, listing_id):
         raise HTTPException(

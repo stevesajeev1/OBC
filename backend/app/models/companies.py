@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class Company(BaseModel):
-    id: int = -1
+    id: int | None = None
     name: str
     url: str
     logo_url: str | None = None

@@ -20,7 +20,7 @@ REFRESH_TOKEN_EXPIRE_SECONDS = 7 * 24 * 60 * 60
 class User(BaseModel):
     """basic user model"""
 
-    id: int = -1
+    id: int | None = None
     username: str
     admin: bool
 
@@ -29,6 +29,9 @@ class DBUser(User):
     """model with hashed password for DB use"""
 
     hashed_password: str
+
+    def to_user(self):
+        return User(**self.model_dump(exclude={"hashed_password"}))
 
 
 class TokenType(Enum):
