@@ -1,132 +1,178 @@
 import psycopg
+from psycopg.rows import dict_row
 
 from ..models.profile import Internship, Profile, ProfileUpdate
 from ..util.db import get_db_connection
 
 # profile READ functions
 
+def get_profile_id(username: str):
+    """gets the foreign key (profile_id) from users table"""
 
-def get_raw_profile_data(username: str):
-    """gets the raw profile data as a dict."""
-
-    conn = get_db_connection()
-    try:
+    with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT username, full_name, major, grad_year, 
-                    linkedin_link, bio, prev_internships
-                FROM users 
-                WHERE username = %s
-                """,
-                (username,),
-            )
-            record = cur.fetchone()
-            if record:
-                return {
-                    "username": record[0],
-                    "full_name": record[1],
-                    "major": record[2],
-                    "grad_year": record[3],
-                    "linkedin_link": record[4],
-                    "bio": record[5],
-                    "prev_internships": record[6],
-                }
-    except psycopg.Error as e:
-        print(f"Database error in get_raw_profile_data: {e}")
-    finally:
-        if conn:
-            conn.close()
+            cur.execute("SELECT profile_id FROM users WHERE username = %s", (username,))
+            row = cur.fetchone()
+            if row:
+                return row[0] # returns the profile_id
     return None
 
 
 def get_valid_profile(username: str):
     """gets a users profile and check if complete"""
-    profile_data = get_raw_profile_data(username)
 
-    if not profile_data:
+    profile_id = get_profile_id(username)
+
+    if not profile_id:
         return None
 
     try:
-        profile = Profile(**profile_data)
-        return profile
-    except Exception:
-        # means profile is not complete
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # get profile data
+                cur.execute(
+                    """
+                    SELECT id, full_name, major, grad_year, linkedin_url, bio, image_url
+                    FROM profiles WHERE id = %s
+                    """,
+                    (profile_id,)
+                )
+                profile_row = cur.fetchone()
+
+                if not profile_row:
+                    return None
+                
+                # get internship data
+                cur.execute(
+                    """
+                    SELECT company, role, time_period 
+                    FROM internships WHERE profile_id = %s
+                    """,
+                    (profile_id,)
+                )
+                internship_rows = cur.fetchall()
+
+                return Profile.from_db(profile_row, internship_rows)
+            
+    except Exception as e:
+        print(f"Error fetching profile: {e}")
         return None
+
+
+# helper for getting all profiles
+def get_all_profiles(page: int, limit: int):
+    """gets a paginated list of profiles"""
+
+    offset = (page-1) * limit
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # get main profile rows
+                cur.execute(
+                    """
+                    SELECT id, full_name, major, grad_year, linkedin_url, bio, image_url
+                    FROM profiles
+                    ORDER BY id DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (limit, offset)
+                )
+                profile_rows = cur.fetchall()
+
+                results = []
+                for row in profile_rows:
+                    # for each profile, get internships
+                    cur.execute(
+                        """
+                        SELECT company, role, time_period 
+                        FROM internships WHERE profile_id = %s
+                        """,
+                        (row['id'],)
+                    )
+                    internship_rows = cur.fetchall() 
+
+                    results.append(Profile.from_db(row, internship_rows))
+
+                return results
+            
+    except Exception as e:
+        print(f"Error getting all profiles: {e}")
+        return []
 
 
 # profile WRITE functions
+
 def update_profile(username: str, profile_update: ProfileUpdate):
-    """updates a user profile in the db"""
+    """updates a user profile in the db (including profile and internship)"""
 
-    # get current data
-    current_data = get_raw_profile_data(username)
-    if not current_data:
-        return None
-
-    # make update model from current data
-    current_profile = ProfileUpdate(**current_data)
-
-    # apply new data
-    update_data = profile_update.model_dump(exclude_unset=True)
-
-    # merge new data and current data
-    updated_profile = current_profile.model_copy(update=update_data)
-
-    # convert internship list to dict
-    internships_list = None
-    if updated_profile.prev_internships is not None:
-        internships_list = [i.model_dump() for i in updated_profile.prev_internships]
-
-    conn = get_db_connection()
     try:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                UPDATE users
-                SET full_name = %s, major = %s, grad_year = %s, 
-                    linkedin_link = %s, bio = %s, prev_internships = %s
-                WHERE username = %s
-                """,
-                (
-                    updated_profile.full_name,
-                    updated_profile.major,
-                    updated_profile.grad_year,
-                    (
-                        str(updated_profile.linkedin_link)
-                        if updated_profile.linkedin_link
-                        else None
-                    ),
-                    updated_profile.bio,
-                    internships_list,
-                    username,
-                ),
-            )
-            conn.commit()
 
-            # After updating, fetch the new profile data to return it
-            return get_raw_profile_data(username)
-    except psycopg.Error as e:
-        conn.rollback()
+        profile_id = get_profile_id(username)
+
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # create profile if doesnt exist
+                if not profile_id:
+                    cur.execute(
+                        "INSERT INTO profiles (full_name) VALUES (NULL) RETURNING id"
+                    )
+                    new_row = cur.fetchone()
+                    profile_id = new_row['id']
+                    
+                    cur.execute(
+                        "UPDATE users SET profile_id = %s WHERE username = %s",
+                        (profile_id, username)
+                    )
+
+                update_data = profile_update.model_dump(exclude_unset=True)
+                
+                fields_map = {
+                    'full_name': 'full_name',
+                    'major': 'major', 
+                    'grad_year': 'grad_year',
+                    'linkedin_link': 'linkedin_url', 
+                    'bio': 'bio',
+                    'image_url': 'image_url' 
+                }
+                
+                set_clauses = []
+                values = []
+                
+                for model_field, db_col in fields_map.items():
+                    if model_field in update_data:
+                        set_clauses.append(f"{db_col} = %s")
+                        values.append(update_data[model_field])
+                
+                if set_clauses:
+                    values.append(profile_id)
+                    sql = f"UPDATE profiles SET {', '.join(set_clauses)} WHERE id = %s"
+                    cur.execute(sql, values)
+
+                # changing internships
+                if 'prev_internships' in update_data and update_data['prev_internships'] is not None:
+                    # delete existing internships for this profile
+                    cur.execute("DELETE FROM internships WHERE profile_id = %s", (profile_id,))
+                    
+                    # innsert new ones one by one
+                    for internship in update_data['prev_internships']:
+                        cur.execute(
+                            """
+                            INSERT INTO internships (profile_id, company, role, time_period)
+                            VALUES (%s, %s, %s, %s)
+                            """,
+                            (
+                                profile_id, 
+                                internship['company'], 
+                                internship['role'], 
+                                internship['time_period']
+                            )
+                        )
+
+                conn.commit()
+
+            return get_valid_profile(username)
+
+    except Exception as e:
         print(f"Database error in update_profile: {e}")
         return None
-    finally:
-        if conn:
-            conn.close()
-
-
-def delete_user(username: str):
-    """deletes user from db"""
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM users WHERE username = %s", (username,))
-            conn.commit()
-            return True
-    except psycopg.Error as e:
-        conn.rollback()
-        print(f"Database error in delete_user: {e}")
-        return False
-    finally:
-        if conn:
-            conn.close()

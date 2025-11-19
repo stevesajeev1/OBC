@@ -5,18 +5,18 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from ..models.auth import DBUser
 from ..models.profile import Profile, ProfileUpdate
 from ..util.auth import get_user
-from ..util.profile import *
+from ..util.profile import get_valid_profile, get_all_profiles, update_profile
 
 # --- router ---
-router = APIRouter(prefix="/profile", tags=["Profile"])
+router = APIRouter(prefix="/profiles", tags=["Profile"])
 
 
 # --- api endpoints ---
-@router.get("/me", response_model=dict, status_code=status.HTTP_200_OK)
+@router.get("/me", response_model=Profile, status_code=status.HTTP_200_OK)
 def get_own_profile(current_user: Annotated[DBUser, Depends(get_user)]):
     """READ ; get profile for currently logged in user"""
 
-    profile_data = get_raw_profile_data(current_user.username)
+    profile_data = get_valid_profile(current_user.username)
     if not profile_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Profile cannot be found"
@@ -24,7 +24,7 @@ def get_own_profile(current_user: Annotated[DBUser, Depends(get_user)]):
     return profile_data
 
 
-@router.put("/me", response_model=dict, status_code=status.HTTP_200_OK)
+@router.patch("/me", response_model=Profile, status_code=status.HTTP_200_OK)
 def update_own_profile(
     profile_data: ProfileUpdate, current_user: Annotated[DBUser, Depends(get_user)]
 ):
@@ -38,13 +38,8 @@ def update_own_profile(
     return updated_profile
 
 
-@router.get("/{username}", response_model=Profile, status_code=status.HTTP_200_OK)
-def get_public_profile(username: str):
-    """(READ) get ANOTHER user's public profile by their username"""
+@router.get("/", response_model=list[Profile], status_code=status.HTTP_200_OK)
+def get_profiles(page: int=1, limit: int=20):
+    """(READ) get ALL user's public profile"""
 
-    profile = get_valid_profile(username)
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Profile could not be found"
-        )
-    return profile
+    return get_all_profiles(page, limit)
