@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from ..models.auth import DBUser
 from ..models.profile import Profile, ProfileUpdate
 from ..util.auth import get_user
-from ..util.profile import get_valid_profile, get_all_profiles, update_profile
+from ..util.profile import get_all_profiles, get_valid_profile, update_profile
 
 # --- router ---
 router = APIRouter(prefix="/profiles", tags=["Profile"])
@@ -39,7 +39,7 @@ def update_own_profile(
 
 
 @router.get("/", response_model=list[Profile], status_code=status.HTTP_200_OK)
-def get_profiles(page: int=1, limit: int=20):
+def get_profiles(page: int = 1, limit: int = 20):
     """(READ) get ALL user's public profile"""
 
     return get_all_profiles(page, limit)
