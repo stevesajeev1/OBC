@@ -15,3 +15,4 @@ def get_companies_from_db():
 
             companies = [Company.from_tuple(row) for row in rows]
             return companies
+

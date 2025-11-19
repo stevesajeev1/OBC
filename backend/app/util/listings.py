@@ -40,3 +40,6 @@ def delete_listing_in_db(listing_id: UUID):
             deleted = cur.fetchone()
 
     return deleted is not None
+
+            
+
