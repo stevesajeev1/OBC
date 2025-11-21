@@ -24,7 +24,7 @@ def favorite_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)])
     if not save_favorite_to_db(user_id, listing_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to favorite listing with id {listing_id}.",
+            detail=f"Failed to favorite listing with id. {listing_id} already favorited.",
         )
 
 
@@ -42,5 +42,5 @@ def unfavorite_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)
     if not delete_favorite_from_db(user_id, listing_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to unfavorite listing with id {listing_id}. - kushi",
+            detail=f"Failed to unfavorite listing with id. {listing_id} not yet favorited.",
         )
