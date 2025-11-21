@@ -22,7 +22,7 @@
     profileDialogOpen.value = !profileDialogOpen.value;
   };
 
-  const handleDialogExit = (e: PointerEvent) => {
+  const handleDialogExit = (e: MouseEvent) => {
     let target = e.target as HTMLElement;
     while (target && target.parentElement) {
       if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
