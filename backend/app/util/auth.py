@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from passlib.context import CryptContext
 
-from ..models.auth import DBUser, Token, TokenType
+from ..models.auth import DBUser, Token, TokenType, User
 from ..util.db import get_db_connection
 
 # --- hashing ---
@@ -26,15 +26,16 @@ def get_user_from_db(username: str):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT username, hashed_password, admin FROM users WHERE username = %s",
+                "SELECT id, username, hashed_password, admin FROM users WHERE username = %s",
                 (username,),
             )
             user_record = cur.fetchone()
             if user_record:
                 return DBUser(
-                    username=user_record[0],
-                    hashed_password=user_record[1],
-                    admin=user_record[2],
+                    id=user_record[0],
+                    username=user_record[1],
+                    hashed_password=user_record[2],
+                    admin=user_record[3],
                 )
     return None
 
@@ -66,4 +67,6 @@ def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = get_user_from_db(jwt_token.username)
     if user is None:
         raise credentials_exception
-    return user
+    return User.model_validate(
+        user.model_dump(exclude={"hashed_password"})
+    )
