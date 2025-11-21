@@ -418,4 +418,3 @@ def insert_listings(listings: list[Listing]):
                 [l.to_tuple() for l in listings],
             )
         conn.commit()
-

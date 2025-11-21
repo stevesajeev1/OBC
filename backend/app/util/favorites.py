@@ -1,10 +1,11 @@
-from .db import get_db_connection
-from ..models.favorites import Favorite
-from ..models.listings import Listing
-
 from uuid import UUID
 
-def save_favorite_to_db(user_id : int, listing_id: UUID) -> bool:
+from ..models.favorites import Favorite
+from ..models.listings import Listing
+from .db import get_db_connection
+
+
+def save_favorite_to_db(user_id: int, listing_id: UUID) -> bool:
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -14,15 +15,15 @@ def save_favorite_to_db(user_id : int, listing_id: UUID) -> bool:
                 ON CONFLICT (user_id, listing_id) DO NOTHING
                 RETURNING user_id;
                 """,
-                (user_id, listing_id)
+                (user_id, listing_id),
             )
             inserted = cur.fetchone()
             conn.commit()
 
     return inserted is not None
-    
 
-def get_favorites_from_db(user_id: int) ->list[Listing]:
+
+def get_favorites_from_db(user_id: int) -> list[Listing]:
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -42,8 +43,9 @@ def get_favorites_from_db(user_id: int) ->list[Listing]:
 
             favorites = [Listing.from_tuple(row) for row in rows]
             return favorites
-        
-def delete_favorite_from_db(user_id : int, listing_id : UUID) -> bool:
+
+
+def delete_favorite_from_db(user_id: int, listing_id: UUID) -> bool:
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -57,4 +59,3 @@ def delete_favorite_from_db(user_id : int, listing_id : UUID) -> bool:
             deleted = cur.fetchone()
             conn.commit()
     return deleted is not None
-

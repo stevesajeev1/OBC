@@ -67,6 +67,3 @@ def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
     if user is None:
         raise credentials_exception
     return user
-
-
-

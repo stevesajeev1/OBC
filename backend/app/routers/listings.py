@@ -35,4 +35,3 @@ def delete_listing(listing_id: UUID, user: Annotated[User, Depends(get_user)]):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to delete listing with id {listing_id}",
         )
-    
