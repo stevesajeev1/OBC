@@ -395,10 +395,15 @@ def insert_companies(companies: list[Company]):
 
 # Inserts listings into DB
 def insert_listings(listings: list[Listing]):
+    if not listings:
+        return
+
+    listing_tuples = [l.to_tuple() for l in listings]
+    new_ids = [(l.id,) for l in listings]
+
     with get_db_connection() as conn:
-        # Optionally truncate table
-        conn.execute("TRUNCATE TABLE listings;")
         with conn.cursor() as cur:
+            # Upsert listings
             cur.executemany(
                 """
                 INSERT INTO listings (
@@ -409,8 +414,35 @@ def insert_listings(listings: list[Listing]):
                     %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s,
                     %s, %s, %s
-                );
+                )
+                ON CONFLICT (id) DO UPDATE SET
+                    source = EXCLUDED.source,
+                    title = EXCLUDED.title,
+                    active = EXCLUDED.active,
+                    date_updated = EXCLUDED.date_updated,
+                    is_visible = EXCLUDED.is_visible,
+                    date_posted = EXCLUDED.date_posted,
+                    url = EXCLUDED.url,
+                    locations = EXCLUDED.locations,
+                    terms = EXCLUDED.terms,
+                    sponsorship = EXCLUDED.sponsorship,
+                    category = EXCLUDED.category,
+                    faang_plus = EXCLUDED.faang_plus,
+                    company_id = EXCLUDED.company_id;
                 """,
-                [l.to_tuple() for l in listings],
+                listing_tuples,
             )
+
+            # Delete old listings
+            cur.execute("CREATE TEMP TABLE tmp_listing_ids(id UUID) ON COMMIT DROP;")
+
+            cur.executemany("INSERT INTO tmp_listing_ids(id) VALUES (%s);", new_ids)
+
+            cur.execute(
+                """
+                DELETE FROM listings
+                WHERE id NOT IN (SELECT id FROM tmp_listing_ids);
+                """
+            )
+
         conn.commit()
