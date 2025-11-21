@@ -1,46 +1,46 @@
 ﻿<script lang="ts" setup>
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { getProfile } from './api/profile';
-import { user } from './state';
-import { signOut } from './api/auth';
-import { useRouter } from 'vue-router';
+  import { computed, onUnmounted, ref, watch } from 'vue';
+  import { getProfile } from './api/profile';
+  import { user } from './state';
+  import { signOut } from './api/auth';
+  import { useRouter } from 'vue-router';
 
-const router = useRouter();
+  const router = useRouter();
 
-const profileDialogOpen = ref<boolean>(false);
+  const profileDialogOpen = ref<boolean>(false);
 
-watch(user, () => {
-  if (!user.value) profileDialogOpen.value = false;
-});
+  watch(user, () => {
+    if (!user.value) profileDialogOpen.value = false;
+  });
 
-const profile = computed(() => {
-  if (!user.value) return;
-  return getProfile();
-});
+  const profile = computed(() => {
+    if (!user.value) return;
+    return getProfile();
+  });
 
-const toggleProfileDialog = () => {
-  profileDialogOpen.value = !profileDialogOpen.value;
-};
+  const toggleProfileDialog = () => {
+    profileDialogOpen.value = !profileDialogOpen.value;
+  };
 
-const handleDialogExit = (e: PointerEvent) => {
-  let target = e.target as HTMLElement;
-  while (target && target.parentElement) {
-    if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
-    target = target.parentElement;
-  }
+  const handleDialogExit = (e: PointerEvent) => {
+    let target = e.target as HTMLElement;
+    while (target && target.parentElement) {
+      if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
+      target = target.parentElement;
+    }
 
-  profileDialogOpen.value = false;
-}
+    profileDialogOpen.value = false;
+  };
 
-document.addEventListener('click', handleDialogExit);
-onUnmounted(() => {
-  document.removeEventListener('click', handleDialogExit);
-});
+  document.addEventListener('click', handleDialogExit);
+  onUnmounted(() => {
+    document.removeEventListener('click', handleDialogExit);
+  });
 
-const handleSignOut = async () => {
-  await signOut();
-  router.push({ name: 'login' });
-}
+  const handleSignOut = async () => {
+    await signOut();
+    router.push({ name: 'login' });
+  };
 </script>
 
 <template>
@@ -180,7 +180,8 @@ const handleSignOut = async () => {
     position: relative;
   }
 
-  .nav-link:hover, #nav-profile:hover {
+  .nav-link:hover,
+  #nav-profile:hover {
     opacity: 0.8;
   }
 
@@ -224,7 +225,8 @@ const handleSignOut = async () => {
     transition: opacity 0.3s ease;
   }
 
-  #nav-profile:hover, #profile-dialog-close:hover {
+  #nav-profile:hover,
+  #profile-dialog-close:hover {
     cursor: pointer;
   }
 

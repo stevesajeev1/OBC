@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { signIn } from '@/api/auth';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+  import { signIn } from '@/api/auth';
+  import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
 
   const router = useRouter();
 
-  const username = ref<string>("");
-  const password = ref<string>("");
+  const username = ref<string>('');
+  const password = ref<string>('');
 
   const goBack = () => {
     router.back();
@@ -20,7 +20,7 @@ import { useRouter } from 'vue-router';
     } else {
       alert(`Login failed: ${response.message}`);
     }
-  }
+  };
 </script>
 <template>
   <div id="login-page">

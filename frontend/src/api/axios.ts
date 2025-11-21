@@ -1,13 +1,13 @@
 // See https://medium.com/@velja/token-refresh-with-axios-interceptors-for-a-seamless-authentication-experience-854b06064bde
 
-import axios, { isAxiosError } from "axios";
-import { getApiHost } from "@/api/util";
-import { clearUserState, setUserState } from "@/state";
+import axios, { isAxiosError } from 'axios';
+import { getApiHost } from '@/api/util';
+import { clearUserState, setUserState } from '@/state';
 
 export const axiosInstance = axios.create({
   baseURL: getApiHost(),
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
   withCredentials: true
 });
@@ -15,22 +15,25 @@ export const axiosInstance = axios.create({
 const refreshAxiosInstance = axios.create({
   baseURL: getApiHost(),
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
   withCredentials: true
 });
 
-export const ACCESS_TOKEN_KEY = "accessToken";
+export const ACCESS_TOKEN_KEY = 'accessToken';
 
-axiosInstance.interceptors.request.use(request => {
-  const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-  if (accessToken) {
-    request.headers['Authorization'] = `Bearer ${accessToken}`;
+axiosInstance.interceptors.request.use(
+  request => {
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (accessToken) {
+      request.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    return request;
+  },
+  error => {
+    return Promise.reject(error);
   }
-  return request;
-}, error => {
-  return Promise.reject(error);
-});
+);
 
 axiosInstance.interceptors.response.use(
   response => response, // Directly return successful responses.
@@ -45,7 +48,7 @@ axiosInstance.interceptors.response.use(
         // Store the new access and refresh tokens.
         setUserState(accessToken, admin);
         return axiosInstance(originalRequest); // Retry the original request with the new access token.
-      } catch (refreshError) {
+      } catch (_refreshError) {
         // Handle refresh token errors by clearing stored tokens and redirecting to the login page.
         clearUserState();
 
@@ -60,11 +63,11 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export const getErrorMessage = (error: Error) => {
-  let message = "An error occurred";
+export const getErrorMessage = (error: unknown) => {
+  let message = 'An error occurred';
 
   if (isAxiosError(error)) {
     message = error.response?.data?.detail ?? message;
   }
   return message;
-}
+};
