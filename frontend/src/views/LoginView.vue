@@ -1,10 +1,25 @@
 <script setup lang="ts">
+  import { signIn } from '@/api/auth';
+  import { ref } from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
 
+  const username = ref<string>('');
+  const password = ref<string>('');
+
   const goBack = () => {
     router.back();
+  };
+
+  const handleSignIn = async () => {
+    const response = await signIn(username.value, password.value);
+
+    if (response.success) {
+      router.push({ name: 'home' });
+    } else {
+      alert(`Login failed: ${response.message}`);
+    }
   };
 </script>
 <template>
@@ -23,17 +38,10 @@
             <span id="orange-text">Back</span>!
           </h1>
 
-          <button id="google-sign-in">
-            <img src="@/assets/google.svg" alt="Google icon" id="google-icon" />
-            Sign in with Google
-          </button>
+          <input v-model.trim="username" type="text" placeholder="Username" class="form-input" />
+          <input v-model.trim="password" type="password" placeholder="Password" class="form-input" />
 
-          <p id="or-divider">or</p>
-
-          <input type="email" placeholder="Email" class="form-input" />
-          <input type="password" placeholder="Password" class="form-input" />
-
-          <button id="login-button">Sign in</button>
+          <button id="login-button" @click="handleSignIn">Sign in</button>
 
           <p id="account-prompt">
             Don't have an account?
@@ -269,8 +277,6 @@
 
     -webkit-text-stroke-width: 0.25px;
     -webkit-text-stroke-color: #000;
-    text-stroke-width: 0.25px;
-    text-stroke-color: #000;
   }
 
   #account-prompt {

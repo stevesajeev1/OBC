@@ -3,7 +3,7 @@ const VERCEL_RELATED_PROJECTS = import.meta.env.VERCEL_RELATED_PROJECTS;
 
 const DEFAULT_HOST = 'http://localhost:8000';
 
-const getApiHost = (): string => {
+export const getApiHost = (): string => {
   // Local
   if (VERCEL_ENV === undefined || VERCEL_RELATED_PROJECTS === undefined) {
     return DEFAULT_HOST;
@@ -29,10 +29,4 @@ const getApiHost = (): string => {
   }
 
   return DEFAULT_HOST;
-};
-
-export const fetchData = async (): Promise<string> => {
-  const apiHost = getApiHost();
-  const response = await fetch(apiHost);
-  return response.json();
 };
