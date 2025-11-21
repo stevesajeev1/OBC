@@ -3,6 +3,7 @@
 import axios, { isAxiosError } from 'axios';
 import { getApiHost } from '@/api/util';
 import { clearUserState, setUserState } from '@/state';
+import { router } from '@/router/index';
 
 export const axiosInstance = axios.create({
   baseURL: getApiHost(),
@@ -54,7 +55,7 @@ axiosInstance.interceptors.response.use(
 
         const pathname = window.location.pathname.replace(/\/$/, ''); // gets rid of trailing slash if present
         if (pathname !== '/login') {
-          window.location.href = '/login';
+          router.push({ name: 'login' });
         }
         return Promise.reject(error);
       }
