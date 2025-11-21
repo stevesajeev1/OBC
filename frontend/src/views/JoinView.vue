@@ -1,11 +1,26 @@
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
+  import { register } from '@/api/auth';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
   const router = useRouter();
+
+  const username = ref<string>("");
+  const password = ref<string>("");
 
   const goBack = () => {
     router.back();
   };
+
+  const handleRegister = async () => {
+    const response = await register(username.value, password.value);
+
+    if (response.success) {
+      router.push({ name: 'home' });
+    } else {
+      alert(`Join failed: ${response.message}`);
+    }
+  }
 </script>
 <template>
   <div id="login-page">
@@ -23,17 +38,10 @@
             <span id="orange-text">Orange</span> and <span id="blue-text">Blue</span> Collar!
           </h1>
 
-          <button id="google-sign-in">
-            <img src="@/assets/google.svg" alt="Google icon" id="google-icon" />
-            Sign up with Google
-          </button>
+          <input v-model.trim="username" type="text" placeholder="Username" class="form-input" />
+          <input v-model.trim="password" type="password" placeholder="Password" class="form-input" />
 
-          <p id="or-divider">or</p>
-
-          <input type="email" placeholder="Email" class="form-input" />
-          <input type="password" placeholder="Password" class="form-input" />
-
-          <button id="join-button">Join Now!</button>
+          <button id="join-button" @click="handleRegister">Join Now!</button>
 
           <p id="account-prompt">
             Already have an account?
@@ -269,8 +277,6 @@
 
     -webkit-text-stroke-width: 0.25px;
     -webkit-text-stroke-color: #000;
-    text-stroke-width: 0.25px;
-    text-stroke-color: #000;
   }
 
   #account-prompt {

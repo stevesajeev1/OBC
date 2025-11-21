@@ -1,4 +1,49 @@
-﻿<template>
+﻿<script lang="ts" setup>
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { getProfile } from './api/profile';
+import { user } from './state';
+import { signOut } from './api/auth';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const profileDialogOpen = ref<boolean>(false);
+
+watch(user, () => {
+  if (!user.value) profileDialogOpen.value = false;
+});
+
+const profile = computed(() => {
+  if (!user.value) return;
+  return getProfile();
+});
+
+const toggleProfileDialog = () => {
+  profileDialogOpen.value = !profileDialogOpen.value;
+};
+
+const handleDialogExit = (e: PointerEvent) => {
+  let target = e.target as HTMLElement;
+  while (target && target.parentElement) {
+    if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
+    target = target.parentElement;
+  }
+
+  profileDialogOpen.value = false;
+}
+
+document.addEventListener('click', handleDialogExit);
+onUnmounted(() => {
+  document.removeEventListener('click', handleDialogExit);
+});
+
+const handleSignOut = async () => {
+  await signOut();
+  router.push({ name: 'login' });
+}
+</script>
+
+<template>
   <div class="app-container">
     <nav class="navbar">
       <div class="logo-container">
@@ -10,15 +55,25 @@
         <router-link to="/" class="nav-link">Home</router-link>
         <router-link to="/internships" class="nav-link">Internships</router-link>
         <router-link to="/team" class="nav-link">About</router-link>
-        <router-link to="/login" class="nav-link join-now">Login</router-link>
-        <router-link to="/join" class="nav-link join-now">Register</router-link>
+        <template v-if="user === null">
+          <router-link to="/login" class="nav-link join-now">Login</router-link>
+          <router-link to="/join" class="nav-link join-now">Register</router-link>
+        </template>
+        <div v-else id="nav-profile" @click="toggleProfileDialog">
+          <img :src="profile?.image_url" alt="Profile Picture" />
+        </div>
       </div>
     </nav>
     <router-view />
+    <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
+      <div id="profile-dialog-close" @click="profileDialogOpen = false">&#10006;</div>
+      <img :src="profile?.image_url" alt="Profile Picture" />
+      <span>Hi, {{ profile?.name }}!</span>
+      <router-link to="/profile" @click="profileDialogOpen = false">Manage your Account</router-link>
+      <div id="logout" @click="handleSignOut">Logout</div>
+    </dialog>
   </div>
 </template>
-
-<script lang="ts" setup></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
@@ -48,6 +103,7 @@
   }
 
   .app-container {
+    position: relative;
     min-height: 100vh;
     width: 100%;
     color: black;
@@ -124,7 +180,7 @@
     position: relative;
   }
 
-  .nav-link:hover {
+  .nav-link:hover, #nav-profile:hover {
     opacity: 0.8;
   }
 
@@ -158,6 +214,65 @@
       1px -1px 0 #000,
       -1px 1px 0 #000,
       1px 1px 0 #000;
+  }
+
+  #nav-profile {
+    height: 75px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid black;
+    transition: opacity 0.3s ease;
+  }
+
+  #nav-profile:hover, #profile-dialog-close:hover {
+    cursor: pointer;
+  }
+
+  #nav-profile img {
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  #profile-dialog {
+    --width: 300px;
+
+    position: absolute;
+    top: 100px;
+    left: calc(100% - var(--width) - 2rem);
+    width: var(--width);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #profile-dialog-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: large;
+  }
+
+  #profile-dialog img {
+    height: auto;
+    width: 50%;
+    object-fit: cover;
+  }
+
+  #logout {
+    margin-top: 20px;
+    background: black;
+    color: white;
+    padding: 10px 20px;
+    transition: opacity 0.3s ease;
+  }
+
+  #logout:hover {
+    cursor: pointer;
+    opacity: 0.8;
   }
 
   .join-now.router-link-active {
