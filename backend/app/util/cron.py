@@ -342,10 +342,6 @@ def assign_companies(listings: list[Listing]):
             new_companies.append(listing.company)
             existing_map[key] = listing.company
     if new_companies:
-        import json
-
-        with open("data.json", "w") as f:
-            json.dump([c.to_tuple() for c in new_companies], f, indent=4)
         ids = insert_companies(new_companies)
         for company, id in zip(new_companies, ids):
             company.id = id
