@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response,status
+from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
+                     status)
 
 from ..models.api import PaginatedResponse
 from ..models.auth import User
