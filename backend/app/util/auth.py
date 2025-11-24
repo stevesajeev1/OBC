@@ -52,7 +52,7 @@ def create_user(user: DBUser):
                 profile_row = cur.fetchone()
                 if not profile_row:
                     return False
-                
+
                 profile_id = profile_row[0]
 
                 # create user
@@ -62,7 +62,7 @@ def create_user(user: DBUser):
                     VALUES (%s, %s, %s)
                     """,
                     (user.username, user.hashed_password, profile_id),
-                )            
+                )
             conn.commit()
             return True
 

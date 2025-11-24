@@ -1,11 +1,12 @@
 import psycopg
 from psycopg.rows import dict_row
 
+from ..models.auth import User
 from ..models.profile import Internship, Profile, ProfileUpdate
 from ..util.db import get_db_connection
-from ..models.auth import User
 
 # profile READ functions
+
 
 def get_profile_id(username: str):
     """gets the foreign key (profile_id) from users table"""
@@ -20,7 +21,7 @@ def get_profile_id(username: str):
                 WHERE u.username = %s
                 LIMIT 1
                 """,
-                (username,)
+                (username,),
             )
             row = cur.fetchone()
             if row:
@@ -60,14 +61,14 @@ def get_valid_profile(user: User):
                     WHERE u.username = %s
                     GROUP BY p.id
                     """,
-                    (user.username,)
+                    (user.username,),
                 )
                 row = cur.fetchone()
 
                 if not row:
                     return None
 
-                return Profile.from_db(row, row['internships'])
+                return Profile.from_db(row, row["internships"])
 
     except Exception as e:
         print(f"Error fetching profile: {e}")
@@ -105,7 +106,7 @@ def get_all_profiles():
 
                 results = []
                 for row in rows:
-                    results.append(Profile.from_db(row, row['internships']))
+                    results.append(Profile.from_db(row, row["internships"]))
 
                 return results
 
