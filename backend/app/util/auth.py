@@ -41,17 +41,6 @@ def get_user_from_db(username: str):
 
 
 def create_user(user: DBUser):
-<<<<<<< HEAD
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO users (username, hashed_password, admin) VALUES (%s, %s, %s)",
-                    (user.username, user.hashed_password, user.admin),
-                )
-        return True
-    except psycopg.Error:
-=======
     """creates new user and creates an empty profile for them (for profiles)"""
     try:
         with get_db_connection() as conn:
@@ -79,7 +68,6 @@ def create_user(user: DBUser):
 
     except psycopg.Error as e:
         print(f"Database Error in create_user: {e}")
->>>>>>> 2b58a50 (Minor changes and fixes)
         return False
 
 

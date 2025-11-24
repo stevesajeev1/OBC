@@ -20,7 +20,7 @@ class Profile(BaseModel):
     linkedin_url: Optional[str] = None
     bio: Optional[str] = None
     image_url: Optional[str] = None
-    prev_internships: Optional[list[Internship]] = None
+    prev_internships: list[Internship] = []
 
     @classmethod
     def from_db(
@@ -59,3 +59,4 @@ class ProfileUpdate(BaseModel):
     linkedin_url: Optional[str] = None
     bio: Optional[str] = None
     prev_internships: Optional[list[Internship]] = None
+    image_url: Optional[str] = None

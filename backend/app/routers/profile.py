@@ -1,7 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
+                     status)
 
+from ..models.api import PaginatedResponse
 from ..models.auth import User
 from ..models.profile import Profile, ProfileUpdate
 from ..util.auth import get_user
@@ -38,8 +40,12 @@ def update_own_profile(
     return updated_profile
 
 
-@router.get("/", response_model=list[Profile], status_code=status.HTTP_200_OK)
-def get_profiles(page: int = 1, limit: int = 20):
+@router.get(
+    "/", response_model=PaginatedResponse[Profile], status_code=status.HTTP_200_OK
+)
+def get_profiles(request: Request, page: int = 0, pageSize: int = 100):
     """(READ) get ALL user's public profile"""
 
-    return get_all_profiles(page, limit)
+    profiles = get_all_profiles()
+
+    return PaginatedResponse.paginate(profiles, page, pageSize, str(request.url))

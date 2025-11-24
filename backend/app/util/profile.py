@@ -130,24 +130,21 @@ def update_profile(user: User, profile_update: ProfileUpdate):
                 # create profile if doesnt exist
                 if not profile_id:
                     cur.execute(
-                        "INSERT INTO profiles (full_name) VALUES (NULL) RETURNING id"
+                        """
+                        INSERT INTO profiles (user_id, full_name) 
+                        VALUES ((SELECT id FROM users WHERE username = %s), NULL) 
+                        RETURNING id
+                        """,
+                        (user.username,),
                     )
                     new_row = cur.fetchone()
                     profile_id = new_row["id"]
 
-                    cur.execute(
-                        "UPDATE users SET profile_id = %s WHERE username = %s",
-                        (profile_id, user.username),
-                    )
-
                 update_data = profile_update.model_dump(exclude_unset=True)
                 allowed_fields = [
-                    "full_name",
-                    "major",
-                    "grad_year",
-                    "linkedin_url",
-                    "bio",
-                    "image_url",
+                    field
+                    for field in ProfileUpdate.model_fields.keys()
+                    if field != "prev_internships"
                 ]
 
                 set_clauses = []
@@ -175,23 +172,23 @@ def update_profile(user: User, profile_update: ProfileUpdate):
 
                     # insert new internships (in bulk)
                     prev_internships = update_data.get("prev_internships")
-                    if prev_internships:
-                        params = [
-                            (
-                                profile_id,
-                                internship["company"],
-                                internship["role"],
-                                internship["time_period"],
-                            )
-                            for internship in prev_internships
-                        ]
-                        cur.executemany(
-                            """
-                            INSERT INTO internships (profile_id, company, role, time_period)
-                            VALUES (%s, %s, %s, %s)
-                            """,
-                            params,
+                    params = [
+                        (
+                            profile_id,
+                            internship["company"],
+                            internship["role"],
+                            internship["time_period"],
                         )
+                        for internship in prev_internships
+                    ]
+
+                    cur.executemany(
+                        """
+                        INSERT INTO internships (profile_id, company, role, time_period)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        params,
+                    )
 
                 conn.commit()
 
