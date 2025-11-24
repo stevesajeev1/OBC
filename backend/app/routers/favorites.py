@@ -6,8 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from ..models.auth import DBUser, User
 from ..models.listings import Listing
 from ..util.auth import get_user
-from ..util.favorites import (delete_favorite_from_db, get_favorites_from_db,
-                              save_favorite_to_db)
+from ..util.favorites import (
+    delete_favorite_from_db,
+    get_favorites_from_db,
+    save_favorite_to_db,
+)
 
 # --- router ---
 router = APIRouter(prefix="/favorites", tags=["Favorites"])

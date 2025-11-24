@@ -5,8 +5,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 
 from ..models.auth import DBUser, Token, TokenType, get_expiry
-from ..util.auth import (create_user, get_password_hash, get_user_from_db,
-                         verify_password)
+from ..util.auth import (
+    create_user,
+    get_password_hash,
+    get_user_from_db,
+    verify_password,
+)
 
 # --- router ---
 router = APIRouter(prefix="/auth", tags=["Authentication"])
