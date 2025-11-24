@@ -19,7 +19,7 @@ export const setUserState = (accessToken: string, admin: boolean) => {
 
 const initUserState = async () => {
   try {
-    const response = await axiosInstance.post('/auth/refresh');
+    const response = await axiosInstance.post('/auth/refresh', null, { _init: true });
 
     const { access_token: accessToken, admin } = response.data;
     setUserState(accessToken, admin);

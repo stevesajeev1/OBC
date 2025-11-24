@@ -1,6 +1,6 @@
 // See https://medium.com/@velja/token-refresh-with-axios-interceptors-for-a-seamless-authentication-experience-854b06064bde
 
-import axios, { isAxiosError } from 'axios';
+import axios, { isAxiosError, type AxiosRequestConfig } from 'axios';
 import { getApiHost } from '@/api/util';
 import { clearUserState, setUserState } from '@/state';
 import { router } from '@/router/index';
@@ -39,8 +39,8 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   response => response, // Directly return successful responses.
   async error => {
-    const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+    const originalRequest: AxiosRequestConfig = error.config;
+    if (error.response.status === 401 && !originalRequest._retry && !originalRequest._init) {
       originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
       try {
         // Make a request to your auth server to refresh the token.
@@ -53,8 +53,7 @@ axiosInstance.interceptors.response.use(
         // Handle refresh token errors by clearing stored tokens and redirecting to the login page.
         clearUserState();
 
-        const pathname = window.location.pathname.replace(/\/$/, ''); // gets rid of trailing slash if present
-        if (pathname !== '/login') {
+        if (router.currentRoute.value.name !== 'login') {
           router.push({ name: 'login' });
         }
         return Promise.reject(error);
