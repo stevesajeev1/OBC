@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from ..models.auth import DBUser
+from ..models.auth import User
 from ..models.profile import Profile, ProfileUpdate
 from ..util.auth import get_user
 from ..util.profile import get_all_profiles, get_valid_profile, update_profile
@@ -13,10 +13,10 @@ router = APIRouter(prefix="/profiles", tags=["Profile"])
 
 # --- api endpoints ---
 @router.get("/me", response_model=Profile, status_code=status.HTTP_200_OK)
-def get_own_profile(current_user: Annotated[DBUser, Depends(get_user)]):
-    """READ ; get profile for currently logged in user"""
+def get_own_profile(current_user: Annotated[User, Depends(get_user)]):
+    """(READ) get profile for currently logged in user"""
 
-    profile_data = get_valid_profile(current_user.username)
+    profile_data = get_valid_profile(current_user)
     if not profile_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Profile cannot be found"
@@ -26,10 +26,10 @@ def get_own_profile(current_user: Annotated[DBUser, Depends(get_user)]):
 
 @router.patch("/me", response_model=Profile, status_code=status.HTTP_200_OK)
 def update_own_profile(
-    profile_data: ProfileUpdate, current_user: Annotated[DBUser, Depends(get_user)]
+    profile_data: ProfileUpdate, current_user: Annotated[User, Depends(get_user)]
 ):
-    """CREATE/UPDATE ; create or update the logged in user profile"""
-    updated_profile = update_profile(current_user.username, profile_data)
+    """(CREATE/UPDATE) create or update the logged in user profile"""
+    updated_profile = update_profile(current_user, profile_data)
     if not updated_profile:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
