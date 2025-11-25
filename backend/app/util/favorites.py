@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from ..models.favorites import Favorite
 from ..models.listings import Listing
 from .db import get_db_connection
 

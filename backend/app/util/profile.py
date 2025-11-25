@@ -1,8 +1,7 @@
-import psycopg
 from psycopg.rows import dict_row
 
 from ..models.auth import User
-from ..models.profile import Internship, Profile, ProfileUpdate
+from ..models.profile import Profile, ProfileUpdate
 from ..util.db import get_db_connection
 
 # profile READ functions
@@ -44,7 +43,7 @@ def get_valid_profile(user: User):
                 cur.execute(
                     """
                     SELECT 
-                        p.id, p.full_name, p.major, p.grad_year, p.linkedin_url, p.bio, p.image_url,
+                        p.id, p.full_name, p.major, p.grad_year, p.linkedin_url, p.bio, p.image_url, p.public,
                         COALESCE(
                             json_agg(
                                 json_build_object(
@@ -85,7 +84,7 @@ def get_all_profiles():
                 cur.execute(
                     """
                     SELECT 
-                        p.id, p.full_name, p.major, p.grad_year, p.linkedin_url, p.bio, p.image_url,
+                        p.id, p.full_name, p.major, p.grad_year, p.linkedin_url, p.bio, p.image_url, p.public,
                         COALESCE(
                             json_agg(
                                 json_build_object(
@@ -98,6 +97,7 @@ def get_all_profiles():
                         ) as internships
                     FROM profiles p
                     LEFT JOIN internships i ON p.id = i.profile_id
+                    WHERE p.public = TRUE
                     GROUP BY p.id
                     ORDER BY p.id DESC
                     """
@@ -122,7 +122,6 @@ def update_profile(user: User, profile_update: ProfileUpdate):
     """updates a user profile in the db (including profile and internship)"""
 
     try:
-
         profile_id = get_profile_id(user.username)
 
         with get_db_connection() as conn:
@@ -131,13 +130,16 @@ def update_profile(user: User, profile_update: ProfileUpdate):
                 if not profile_id:
                     cur.execute(
                         """
-                        INSERT INTO profiles (user_id, full_name) 
-                        VALUES ((SELECT id FROM users WHERE username = %s), NULL) 
+                        INSERT INTO profiles (user_id)
+                        VALUES ((SELECT id FROM users WHERE username = %s))
                         RETURNING id
                         """,
                         (user.username,),
                     )
                     new_row = cur.fetchone()
+                    if new_row is None:
+                        return None
+
                     profile_id = new_row["id"]
 
                 update_data = profile_update.model_dump(exclude_unset=True)
@@ -161,17 +163,14 @@ def update_profile(user: User, profile_update: ProfileUpdate):
                     cur.execute(sql, values)
 
                 # changing internships
-                if (
-                    "prev_internships" in update_data
-                    and update_data["prev_internships"] is not None
-                ):
+                if update_data.get("prev_internships") is not None:
                     # delete existing internships for this profile
                     cur.execute(
                         "DELETE FROM internships WHERE profile_id = %s", (profile_id,)
                     )
 
                     # insert new internships (in bulk)
-                    prev_internships = update_data.get("prev_internships")
+                    prev_internships = update_data.get("prev_internships", [])
                     params = [
                         (
                             profile_id,

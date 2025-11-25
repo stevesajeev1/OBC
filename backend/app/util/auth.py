@@ -46,9 +46,7 @@ def create_user(user: DBUser):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 # create empty profile
-                cur.execute(
-                    "INSERT INTO profiles (full_name) VALUES (NULL) RETURNING id"
-                )
+                cur.execute("INSERT INTO profiles DEFAULT VALUES RETURNING id")
                 profile_row = cur.fetchone()
                 if not profile_row:
                     return False

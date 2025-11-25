@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Internship(BaseModel):
@@ -21,21 +21,22 @@ class Profile(BaseModel):
     bio: Optional[str] = None
     image_url: Optional[str] = None
     prev_internships: list[Internship] = []
+    public: bool = False
 
     @classmethod
     def from_db(
         cls, profile_row: dict[str, Any], internship_rows: list[dict[str, Any]] | None
     ):
         """classmethod to create profile instance from db row"""
-        internships: list[Internship] | None = None
+        internships: list[Internship] = []
         if internship_rows:
             internships = []
             for row in internship_rows:
                 internships.append(
                     Internship(
-                        company=row.get("company"),
-                        role=row.get("role"),
-                        time_period=row.get("time_period"),
+                        company=row["company"],
+                        role=row["role"],
+                        time_period=row["time_period"],
                     )
                 )
 
@@ -47,6 +48,7 @@ class Profile(BaseModel):
             bio=profile_row.get("bio"),
             image_url=profile_row.get("image_url"),
             prev_internships=internships,
+            public=profile_row.get("public", False),
         )
 
 
@@ -59,4 +61,7 @@ class ProfileUpdate(BaseModel):
     linkedin_url: Optional[str] = None
     bio: Optional[str] = None
     prev_internships: Optional[list[Internship]] = None
-    image_url: Optional[str] = None
+    public: Optional[bool] = Field(
+        default=None,
+        description="A profile can only be marked as public if it has a full name set.",
+    )

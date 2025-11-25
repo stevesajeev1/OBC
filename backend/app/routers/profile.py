@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ..models.api import PaginatedResponse
 from ..models.auth import User
@@ -29,7 +29,11 @@ def get_own_profile(current_user: Annotated[User, Depends(get_user)]):
 def update_own_profile(
     profile_data: ProfileUpdate, current_user: Annotated[User, Depends(get_user)]
 ):
-    """(CREATE/UPDATE) create or update the logged in user profile"""
+    """
+    (CREATE/UPDATE) create or update the logged in user profile
+
+    Note: A profile can only be marked as public if it has a full name set.
+    """
     updated_profile = update_profile(current_user, profile_data)
     if not updated_profile:
         raise HTTPException(
