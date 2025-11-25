@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..models.auth import DBUser, User
+from ..models.auth import User
 from ..models.listings import Listing
 from ..util.auth import get_user
 from ..util.favorites import (
