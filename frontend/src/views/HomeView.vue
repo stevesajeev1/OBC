@@ -74,16 +74,14 @@
       </div>
     </div>
 
-
     <div v-if="loading" class="loading">Loading internships...</div>
-
 
     <div v-else-if="error" class="error">
       {{ error }}
       <button @click="fetchInternships" class="retry-btn">Retry</button>
     </div>
 
-     <div v-else class="job-listings">
+    <div v-else class="job-listings">
       <div v-for="job in filteredJobs" :key="job.item.id" class="job-card">
         <div class="job-content">
           <h2>{{ job.item.title }}</h2>
@@ -149,11 +147,9 @@
 
   const API_BASE_URL = 'http://localhost:8000';
 
-
   const formatCategoryDisplay = (category: string): string => {
     const displayMap: { [key: string]: string } = {
       'Data Science, AI & Machine Learning': 'Data Science/AI/ML'
-   
     };
     return displayMap[category] || category;
   };
@@ -166,12 +162,11 @@
     try {
       const response = await axios.get(`${API_BASE_URL}/listings/`, {
         params: {
-          pageSize: 200 
+          pageSize: 200
         }
       });
 
-
-      jobs.value = response.data.results; 
+      jobs.value = response.data.results;
 
       const options = {
         keys: [
@@ -211,7 +206,6 @@
     }
   };
 
-
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString('en-US', {
@@ -223,7 +217,6 @@
       return 'Recent';
     }
   };
-
 
   const formatLocations = (locations: string[]) => {
     if (!locations || locations.length === 0) return 'Remote';
@@ -254,14 +247,14 @@
   const filteredJobs = computed(() => {
     const query = searchQuery.value.trim();
 
-      let filtered = jobs.value.filter(job => job.is_visible && job.active);
+    let filtered = jobs.value.filter(job => job.is_visible && job.active);
     // && job.active
 
     if (selectedCategories.value.length > 0) {
       filtered = filtered.filter(job => selectedCategories.value.includes(job.category));
     }
 
-      if (sponsorshipFilter.value !== 'all') {
+    if (sponsorshipFilter.value !== 'all') {
       filtered = filtered.filter(job =>
         sponsorshipFilter.value === 'offers'
           ? job.sponsorship === 'Offers Sponsorship'
@@ -552,12 +545,11 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 0;
-    flex: 3; 
+    flex: 3;
     border-radius: 4px;
     overflow: hidden;
     border: 2px solid #d4862d;
   }
-
 
   .special-filters-table {
     display: grid;
@@ -636,7 +628,6 @@
     background: #d4862d;
     color: white;
   }
-
 
   .filters-main-container {
     width: 100%;
