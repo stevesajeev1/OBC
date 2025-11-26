@@ -6,19 +6,19 @@ psycopg client-side binding cursors
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from functools import partial
+from typing import TYPE_CHECKING
 
 from . import adapt
 from . import errors as e
 from . import pq
-from .abc import ConnectionType, Params, Query
-from .rows import Row
-from .cursor import Cursor
-from ._queries import PostgresClientQuery, PostgresQuery
-from ._preparing import Prepare
 from ._cursor_base import BaseCursor
+from ._preparing import Prepare
+from ._queries import PostgresClientQuery, PostgresQuery
+from .abc import ConnectionType, Params, Query
+from .cursor import Cursor
 from .cursor_async import AsyncCursor
+from .rows import Row
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401

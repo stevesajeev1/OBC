@@ -7,12 +7,18 @@ Adapters for numpy types.
 from typing import Any
 
 from .. import _oids
-from ..pq import Format
-from ..abc import AdaptContext, Buffer
-from .bool import BoolBinaryDumper, BoolDumper
-from .numeric import Float4BinaryDumper, Float4Dumper, FloatBinaryDumper, FloatDumper
-from .numeric import _IntDumper, dump_int_to_numeric_binary
 from .._struct import pack_int2, pack_int4, pack_int8
+from ..abc import AdaptContext, Buffer
+from ..pq import Format
+from .bool import BoolBinaryDumper, BoolDumper
+from .numeric import (
+    Float4BinaryDumper,
+    Float4Dumper,
+    FloatBinaryDumper,
+    FloatDumper,
+    _IntDumper,
+    dump_int_to_numeric_binary,
+)
 
 
 class NPInt16Dumper(_IntDumper):

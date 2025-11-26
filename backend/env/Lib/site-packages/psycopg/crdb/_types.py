@@ -6,14 +6,18 @@ Types configuration specific for CockroachDB.
 
 from enum import Enum
 
-from ..abc import AdaptContext, NoneType
+from .._adapters_map import AdaptersMap
 from .._oids import TEXT_OID
-from .._typemod import BitTypeModifier, CharTypeModifier, NumericTypeModifier
-from .._typemod import TimeTypeModifier
 from .._typeinfo import TypeInfo, TypesRegistry
+from .._typemod import (
+    BitTypeModifier,
+    CharTypeModifier,
+    NumericTypeModifier,
+    TimeTypeModifier,
+)
+from ..abc import AdaptContext, NoneType
 from ..types.enum import EnumBinaryDumper, EnumDumper
 from ..types.none import NoneDumper
-from .._adapters_map import AdaptersMap
 
 types = TypesRegistry()
 

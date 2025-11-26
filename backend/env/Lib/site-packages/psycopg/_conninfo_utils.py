@@ -7,9 +7,9 @@ Internal utilities to manipulate connection strings
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from functools import lru_cache
 from ipaddress import ip_address
-from dataclasses import dataclass
 
 from . import errors as e
 from . import pq

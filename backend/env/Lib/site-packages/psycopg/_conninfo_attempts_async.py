@@ -6,13 +6,13 @@ Separate connection attempts from a connection string.
 
 from __future__ import annotations
 
-import socket
 import logging
+import socket
 from random import shuffle
 
 from . import errors as e
-from .abc import ConnDict, ConnMapping
 from ._conninfo_utils import get_param, get_param_def, is_ip_address, split_attempts
+from .abc import ConnDict, ConnMapping
 
 if True:  # ASYNC:
     import asyncio

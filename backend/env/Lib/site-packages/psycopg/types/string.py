@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .. import _oids
-from ..pq import Escaping, Format
+from .._encodings import conn_encoding
 from ..abc import AdaptContext
 from ..adapt import Buffer, Dumper, Loader
 from ..errors import DataError
-from .._encodings import conn_encoding
+from ..pq import Escaping, Format
 
 if TYPE_CHECKING:
     from ..pq.abc import Escaping as EscapingProto

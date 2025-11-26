@@ -6,15 +6,25 @@ libpq access using ctypes
 
 from __future__ import annotations
 
-import sys
 import ctypes
 import ctypes.util
-from ctypes import CFUNCTYPE, POINTER, Structure, c_char, c_char_p, c_int, c_size_t
-from ctypes import c_ubyte, c_uint, c_void_p
+import sys
+from ctypes import (
+    CFUNCTYPE,
+    POINTER,
+    Structure,
+    c_char,
+    c_char_p,
+    c_int,
+    c_size_t,
+    c_ubyte,
+    c_uint,
+    c_void_p,
+)
 from typing import Any, NoReturn
 
-from .misc import find_libpq_full_path, version_pretty
 from ..errors import NotSupportedError
+from .misc import find_libpq_full_path, version_pretty
 
 if not (libname := find_libpq_full_path()):
     raise ImportError("libpq library not found")

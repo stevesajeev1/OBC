@@ -6,8 +6,8 @@ Objects to return information about a PostgreSQL connection.
 
 from __future__ import annotations
 
-from pathlib import Path
 from datetime import tzinfo
+from pathlib import Path
 
 from . import errors as e
 from . import pq

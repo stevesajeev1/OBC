@@ -7,9 +7,9 @@ Adapters for booleans.
 from __future__ import annotations
 
 from .. import _oids
-from ..pq import Format
 from ..abc import AdaptContext
 from ..adapt import Buffer, Dumper, Loader
+from ..pq import Format
 
 
 class BoolDumper(Dumper):

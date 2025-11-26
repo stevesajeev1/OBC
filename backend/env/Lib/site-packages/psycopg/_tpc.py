@@ -6,8 +6,8 @@ psycopg two-phase commit support
 
 from __future__ import annotations
 
-import re
 import datetime as dt
+import re
 from base64 import b64decode, b64encode
 from dataclasses import dataclass, replace
 

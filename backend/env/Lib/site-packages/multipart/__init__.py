@@ -19,6 +19,16 @@ for p in sys.path:
     except PermissionError:
         pass
 else:
-    warnings.warn("Please use `import python_multipart` instead.", PendingDeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "Please use `import python_multipart` instead.",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     from python_multipart import *
-    from python_multipart import __all__, __author__, __copyright__, __license__, __version__
+    from python_multipart import (
+        __all__,
+        __author__,
+        __copyright__,
+        __license__,
+        __version__,
+    )

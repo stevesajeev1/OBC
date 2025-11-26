@@ -290,17 +290,13 @@ class SECP384R1(EllipticCurve):
 class SECP256R1(EllipticCurve):
     name = "secp256r1"
     key_size = 256
-    group_order = (
-        0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
-    )
+    group_order = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 
 
 class SECP256K1(EllipticCurve):
     name = "secp256k1"
     key_size = 256
-    group_order = (
-        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
-    )
+    group_order = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
 
 
 class SECP224R1(EllipticCurve):
@@ -318,9 +314,7 @@ class SECP192R1(EllipticCurve):
 class BrainpoolP256R1(EllipticCurve):
     name = "brainpoolP256r1"
     key_size = 256
-    group_order = (
-        0xA9FB57DBA1EEA9BC3E660A909D838D718C397AA3B561A6F7901E0E82974856A7
-    )
+    group_order = 0xA9FB57DBA1EEA9BC3E660A909D838D718C397AA3B561A6F7901E0E82974856A7
 
 
 class BrainpoolP384R1(EllipticCurve):
@@ -368,10 +362,7 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
     ):
         from cryptography.hazmat.backends.openssl.backend import backend
 
-        if (
-            deterministic_signing
-            and not backend.ecdsa_deterministic_supported()
-        ):
+        if deterministic_signing and not backend.ecdsa_deterministic_supported():
             raise UnsupportedAlgorithm(
                 "ECDSA with deterministic signature (RFC 6979) is not "
                 "supported by this version of OpenSSL.",
@@ -442,6 +433,5 @@ def get_curve_for_oid(oid: ObjectIdentifier) -> type[EllipticCurve]:
         return _OID_TO_CURVE[oid]
     except KeyError:
         raise LookupError(
-            "The provided object identifier has no matching elliptic "
-            "curve class"
+            "The provided object identifier has no matching elliptic " "curve class"
         )
