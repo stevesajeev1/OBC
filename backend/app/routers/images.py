@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..models.auth import User
 from ..util.auth import get_user
-from ..util.profile import get_profile_id, update_profile_image
 from ..util.images import ImageMiddleware, delete_object, put_object
+from ..util.profile import get_profile_id, update_profile_image
 
 # --- router ---
 router = APIRouter(prefix="/images", tags=["Images"])
@@ -31,7 +31,8 @@ async def put_profile_image(
 
     if not update_profile_image(profile_id, url):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not update profile image"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not update profile image",
         )
 
 
@@ -47,5 +48,6 @@ async def delete_profile_image(user: Annotated[User, Depends(get_user)]):
 
     if not update_profile_image(profile_id, None):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not delete profile image"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not delete profile image",
         )

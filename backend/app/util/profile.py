@@ -210,7 +210,7 @@ def update_profile_image(profile_id: int, image_url: str | None):
                     WHERE id = %s
                     RETURNING id;
                     """,
-                    (image_url, profile_id)
+                    (image_url, profile_id),
                 )
 
                 updated = cur.fetchone()
