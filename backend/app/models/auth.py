@@ -30,6 +30,7 @@ class DBUser(User):
 
     hashed_password: str
 
+
 class TokenType(Enum):
     ACCESS = 1
     REFRESH = 2
