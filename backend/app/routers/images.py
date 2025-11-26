@@ -1,10 +1,11 @@
 from io import BytesIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..models.auth import User
 from ..util.auth import get_user
+from ..util.profile import get_profile_id, update_profile_image
 from ..util.images import ImageMiddleware, delete_object, put_object
 
 # --- router ---
@@ -20,17 +21,31 @@ async def put_profile_image(
     user: Annotated[User, Depends(get_user)],
     buf: Annotated[BytesIO, Depends(ImageMiddleware(MAX_PROFILE_FILE_SIZE))],
 ):
-    assert user.id is not None
+    profile_id = get_profile_id(user.username)
+    if profile_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Profile cannot be found"
+        )
 
-    # TODO: Replace user ID with profile ID
-    return await put_object(buf, PROFILE_BUCKET, str(user.id))
-    # TODO: Update Profile object in DB
+    url = await put_object(buf, PROFILE_BUCKET, str(profile_id))
+
+    if not update_profile_image(profile_id, url):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not update profile image"
+        )
 
 
 @router.delete("/profile", status_code=status.HTTP_200_OK)
 async def delete_profile_image(user: Annotated[User, Depends(get_user)]):
-    assert user.id is not None
+    profile_id = get_profile_id(user.username)
+    if profile_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Profile cannot be found"
+        )
 
-    # TODO: Replace user ID with profile ID
-    await delete_object(PROFILE_BUCKET, str(user.id))
-    # TODO: Update Profile object in DB
+    await delete_object(PROFILE_BUCKET, str(profile_id))
+
+    if not update_profile_image(profile_id, None):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not delete profile image"
+        )

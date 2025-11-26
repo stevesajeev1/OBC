@@ -2,7 +2,7 @@ from io import BytesIO
 
 from fastapi import HTTPException, UploadFile, status
 from PIL import Image
-from vercel.blob import AsyncBlobClient, UploadProgressEvent
+from vercel.blob import AsyncBlobClient
 
 ALLOWED_IMAGE_TYPES = set(["image/jpeg", "image/jpg", "image/png", "image/webp"])
 
@@ -43,7 +43,7 @@ class ImageMiddleware:
         return buf
 
 
-async def put_object(object: BytesIO, bucket: str, key: str):
+async def put_object(object: BytesIO, bucket: str, key: str) -> str:
     path = f"{bucket}/{key}.webp"
 
     client = AsyncBlobClient()

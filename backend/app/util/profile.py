@@ -7,7 +7,7 @@ from ..util.db import get_db_connection
 # profile READ functions
 
 
-def get_profile_id(username: str):
+def get_profile_id(username: str) -> int | None:
     """gets the foreign key (profile_id) from users table"""
 
     with get_db_connection() as conn:
@@ -196,3 +196,29 @@ def update_profile(user: User, profile_update: ProfileUpdate):
     except Exception as e:
         print(f"Database error in update_profile: {e}")
         return None
+
+
+def update_profile_image(profile_id: int, image_url: str | None):
+    """Sets a profile's image_url in the database."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE profiles
+                    SET image_url = %s
+                    WHERE id = %s
+                    RETURNING id;
+                    """,
+                    (image_url, profile_id)
+                )
+
+                updated = cur.fetchone()
+                if updated is None:
+                    return False
+            conn.commit()
+        return True
+
+    except Exception as e:
+        print(f"Database error in set_profile_image: {e}")
+        return False
