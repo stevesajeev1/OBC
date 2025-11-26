@@ -264,7 +264,7 @@
   const filteredJobs = computed(() => {
     const query = searchQuery.value.trim();
 
-    let filtered = jobs.value.filter(job => job.is_visible);
+    let filtered = jobs.value.filter(job => job.is_visible && job.active);
 
     // Apply category filter if any categories selected
     if (selectedCategories.value.length > 0) {
