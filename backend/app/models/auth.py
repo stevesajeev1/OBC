@@ -30,10 +30,6 @@ class DBUser(User):
 
     hashed_password: str
 
-    def to_user(self):
-        return User(**self.model_dump(exclude={"hashed_password"}))
-
-
 class TokenType(Enum):
     ACCESS = 1
     REFRESH = 2
