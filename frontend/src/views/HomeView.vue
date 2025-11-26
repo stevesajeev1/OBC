@@ -52,7 +52,6 @@
               </button>
             </div>
 
-            <!-- New 1 row 2 column table for FAANG+ and Sponsorship -->
             <div class="special-filters-table">
               <button
                 class="special-filter-btn"
@@ -75,17 +74,16 @@
       </div>
     </div>
 
-    <!-- Loading state -->
+
     <div v-if="loading" class="loading">Loading internships...</div>
 
-    <!-- Error state -->
+
     <div v-else-if="error" class="error">
       {{ error }}
       <button @click="fetchInternships" class="retry-btn">Retry</button>
     </div>
 
-    <!-- Success state -->
-    <div v-else class="job-listings">
+     <div v-else class="job-listings">
       <div v-for="job in filteredJobs" :key="job.item.id" class="job-card">
         <div class="job-content">
           <h2>{{ job.item.title }}</h2>
@@ -140,7 +138,6 @@
     company: Company;
   }
 
-  // Reactive data
   const jobs = ref<Job[]>([]);
   const searchQuery = ref('');
   const selectedCategories = ref<string[]>([]);
@@ -150,19 +147,17 @@
   const fuse = ref<Fuse<Job> | null>(null);
   const selectedFAANG = ref(false);
 
-  // API configuration - adjust port if different
   const API_BASE_URL = 'http://localhost:8000';
 
-  // Add this function to format category display names
+
   const formatCategoryDisplay = (category: string): string => {
     const displayMap: { [key: string]: string } = {
       'Data Science, AI & Machine Learning': 'Data Science/AI/ML'
-      // Add other mappings if needed
+   
     };
     return displayMap[category] || category;
   };
 
-  // Fetch internships from backend
   const fetchInternships = async () => {
     loading.value = true;
     error.value = '';
@@ -171,14 +166,13 @@
     try {
       const response = await axios.get(`${API_BASE_URL}/listings/`, {
         params: {
-          pageSize: 200 // Get more listings at once
+          pageSize: 200 
         }
       });
 
-      // Extract data from the 'results' field instead of 'data'
-      jobs.value = response.data.results; // ← CHANGE THIS LINE
 
-      // Initialize Fuse.js with the fetched data
+      jobs.value = response.data.results; 
+
       const options = {
         keys: [
           {
@@ -217,7 +211,7 @@
     }
   };
 
-  // Format date for display
+
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString('en-US', {
@@ -230,17 +224,15 @@
     }
   };
 
-  // Format locations array
+
   const formatLocations = (locations: string[]) => {
     if (!locations || locations.length === 0) return 'Remote';
     return locations.join(', ');
   };
 
   const toggleCategory = (category: string) => {
-    // Map frontend display names to backend category names
     const categoryMap: { [key: string]: string } = {
       'Data Science/AI/ML': 'Data Science, AI & Machine Learning'
-      // Add other mappings if needed
     };
 
     const backendCategory = categoryMap[category] || category;
@@ -253,26 +245,23 @@
     }
   };
 
-  // Change from array to single value
   const sponsorshipFilter = ref<'all' | 'offers' | 'none'>('all');
 
   const toggleSponsorship = () => {
     sponsorshipFilter.value = sponsorshipFilter.value === 'all' ? 'offers' : 'all';
   };
 
-  // Update the filteredJobs computed function:
   const filteredJobs = computed(() => {
     const query = searchQuery.value.trim();
 
-    let filtered = jobs.value.filter(job => job.is_visible && job.active);
+      let filtered = jobs.value.filter(job => job.is_visible && job.active);
+    // && job.active
 
-    // Apply category filter if any categories selected
     if (selectedCategories.value.length > 0) {
       filtered = filtered.filter(job => selectedCategories.value.includes(job.category));
     }
 
-    // Apply sponsorship filter (updated)
-    if (sponsorshipFilter.value !== 'all') {
+      if (sponsorshipFilter.value !== 'all') {
       filtered = filtered.filter(job =>
         sponsorshipFilter.value === 'offers'
           ? job.sponsorship === 'Offers Sponsorship'
@@ -280,12 +269,10 @@
       );
     }
 
-    // Apply FAANG+ filter
     if (selectedFAANG.value) {
       filtered = filtered.filter(job => job.faang_plus);
     }
 
-    // Apply search query if any
     if (query && fuse.value) {
       const searchResults = fuse.value.search(query);
       filtered = searchResults.map(result => result.item).filter(job => filtered.includes(job));
@@ -307,7 +294,6 @@
 </script>
 
 <style scoped>
-  /* Add these new styles for loading and error states */
   .loading {
     text-align: center;
     padding: 2rem;
@@ -385,7 +371,6 @@
     font-style: italic;
   }
 
-  /* Keep all your existing styles below */
   .home-container {
     width: 100vw;
     padding: 2rem;
@@ -567,13 +552,13 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 0;
-    flex: 3; /* Increased from 2 to 3 */
+    flex: 3; 
     border-radius: 4px;
     overflow: hidden;
     border: 2px solid #d4862d;
   }
 
-  /* New styles for the special filters table */
+
   .special-filters-table {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -581,7 +566,7 @@
     border-radius: 4px;
     overflow: hidden;
     border: 2px solid #d4862d;
-    flex: 1; /* Kept at 1 */
+    flex: 1;
   }
 
   .category-btn {
@@ -607,7 +592,7 @@
   }
 
   .special-filter-btn {
-    padding: 0.7rem 0.8rem; /* Reduced from 1.5rem to 0.8rem */
+    padding: 0.7rem 0.8rem;
     background: transparent;
     border: none;
     color: white;
@@ -652,9 +637,9 @@
     color: white;
   }
 
-  /* Remove or update the container width restriction */
+
   .filters-main-container {
-    width: 100%; /* Change from 60% to 100% */
+    width: 100%;
     margin: 0 auto 2rem auto;
     display: flex;
     justify-content: center;
@@ -668,16 +653,16 @@
 
     .category-buttons-single-row {
       grid-template-columns: repeat(3, 1fr);
-      flex: 1; /* Reset flex on mobile */
+      flex: 1;
     }
 
     .special-filters-table {
       grid-template-columns: 1fr 1fr;
-      flex: 1; /* Reset flex on mobile */
+      flex: 1;
     }
 
     .filters-main-container {
-      width: 90%; /* Keep some restriction on mobile */
+      width: 90%;
     }
   }
 
@@ -796,7 +781,7 @@
   }
 
   .filters-wrapper {
-    min-height: 0px; /* This reserves space for expanded filters */
+    min-height: 0px;
     margin-bottom: 2rem;
   }
 
