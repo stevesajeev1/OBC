@@ -80,7 +80,7 @@ def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
     except JWTError:
         raise credentials_exception
 
-    user = get_user_from_db(jwt_token.username)
-    if user is None:
+    db_user = get_user_from_db(jwt_token.username)
+    if db_user is None:
         raise credentials_exception
-    return User.model_validate(user.model_dump(exclude={"hashed_password"}))
+    return User.model_validate(db_user.model_dump(exclude={"hashed_password"}))

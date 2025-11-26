@@ -20,7 +20,7 @@ REFRESH_TOKEN_EXPIRE_SECONDS = 7 * 24 * 60 * 60
 class User(BaseModel):
     """basic user model"""
 
-    id: int = -1
+    id: int | None = None
     username: str
     admin: bool
 
