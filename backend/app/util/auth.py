@@ -45,22 +45,22 @@ def create_user(user: DBUser):
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
-                # create empty profile
-                cur.execute("INSERT INTO profiles DEFAULT VALUES RETURNING id")
-                profile_row = cur.fetchone()
-                if not profile_row:
-                    return False
-
-                profile_id = profile_row[0]
-
                 # create user
                 cur.execute(
                     """
-                    INSERT INTO users (username, hashed_password, profile_id) 
-                    VALUES (%s, %s, %s)
+                    INSERT INTO users (username, hashed_password)
+                    VALUES (%s, %s) RETURNING id
                     """,
-                    (user.username, user.hashed_password, profile_id),
+                    (user.username, user.hashed_password),
                 )
+                user_row = cur.fetchone()
+                if not user_row:
+                    return False
+
+                # create empty profile
+                user_id = user_row[0]
+                cur.execute("INSERT INTO profiles (user_id) VALUES (%s)", (user_id,))
+
             conn.commit()
             return True
 
