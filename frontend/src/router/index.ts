@@ -15,6 +15,11 @@ export const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/networking',
+      name: 'networking',
+      component: () => import('../views/NetworkingView.vue')
+    },
+    {
       path: '/team',
       name: 'team',
       component: () => import('../views/TeamView.vue')
