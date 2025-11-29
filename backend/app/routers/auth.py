@@ -4,7 +4,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 
-from ..models.auth import DBUser, Token, TokenType, get_expiry
+from ..models.auth import AuthResponse, DBUser, Token, TokenType, get_expiry
 from ..util.auth import (
     create_user,
     get_password_hash,
@@ -17,7 +17,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 # --- api endpoints ---
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED
+)
 def register_user(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
@@ -56,10 +58,10 @@ def register_user(
         httponly=True,
         samesite="none",
     )
-    return access_jwt
+    return AuthResponse(access_token=access_jwt, admin=new_user.admin)
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=AuthResponse, status_code=status.HTTP_200_OK)
 def login_user(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
@@ -85,7 +87,7 @@ def login_user(
         httponly=True,
         samesite="none",
     )
-    return access_jwt
+    return AuthResponse(access_token=access_jwt, admin=user.admin)
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
@@ -93,7 +95,7 @@ def logout_user(response: Response):
     response.delete_cookie(key="refresh_token", path="/auth")
 
 
-@router.post("/refresh", status_code=status.HTTP_200_OK)
+@router.post("/refresh", response_model=AuthResponse, status_code=status.HTTP_200_OK)
 def refresh_token(
     response: Response, refresh_token: Annotated[str | None, Cookie()] = None
 ):
@@ -111,9 +113,16 @@ def refresh_token(
             detail="Invalid or expired refresh token",
         )
 
+    user = get_user_from_db(token.username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
     # create and return tokens
-    access_token = Token(username=token.username, token_type=TokenType.ACCESS)
-    new_refresh_token = Token(username=token.username, token_type=TokenType.REFRESH)
+    access_token = Token(username=user.username, token_type=TokenType.ACCESS)
+    new_refresh_token = Token(username=user.username, token_type=TokenType.REFRESH)
 
     access_jwt = access_token.to_jwt()
     refresh_jwt = new_refresh_token.to_jwt()
@@ -128,4 +137,4 @@ def refresh_token(
         samesite="none",
     )
 
-    return access_jwt
+    return AuthResponse(access_token=access_jwt, admin=user.admin)
