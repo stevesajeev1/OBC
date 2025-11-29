@@ -92,3 +92,8 @@ class Token(BaseModel):
             "token_type": self.token_type.name,
         }
         return jwt.encode(jwt_payload, JWT_SECRET, algorithm=ALGORITHM)
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    admin: bool
