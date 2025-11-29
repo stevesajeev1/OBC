@@ -86,6 +86,16 @@
 
       <div v-else class="job-listings">
         <div v-for="job in currentPageJobs" :key="job.item.id" class="job-card">
+          <button
+            v-if="user?.admin"
+            @click="deleteListing(job.item.id)"
+            class="delete-btn"
+            :disabled="deletingListingId === job.item.id"
+            :title="`Delete ${job.item.title}`"
+          >
+            {{ deletingListingId === job.item.id ? 'Deleting...' : '×' }}
+          </button>
+
           <div class="job-header">
             <h2>{{ job.item.title }}</h2>
             <img
@@ -104,16 +114,6 @@
             <span v-if="job.item.faang_plus" class="faang-tag">FAANG+</span>
           </div>
           <p class="source">Source: {{ job.item.source }}</p>
-
-          <button
-            v-if="user?.admin"
-            @click="deleteListing(job.item.id)"
-            class="delete-btn"
-            :disabled="deletingListingId === job.item.id"
-            :title="`Delete ${job.item.title}`"
-          >
-            {{ deletingListingId === job.item.id ? 'Deleting...' : '×' }}
-          </button>
 
           <a :href="job.item.url" target="_blank" class="apply-button">Apply Now</a>
         </div>
@@ -297,21 +297,7 @@
         }
       }
 
-      const options = {
-        keys: [
-          { name: 'title', weight: 2 },
-          { name: 'company.name', weight: 1.5 },
-          { name: 'locations', weight: 1.5 },
-          { name: 'category', weight: 1.2 },
-          { name: 'terms', weight: 1 }
-        ],
-        threshold: 0.4,
-        includeScore: true,
-        minMatchCharLength: 2,
-        shouldSort: true
-      };
-
-      fuse.value = new Fuse(allJobsCache.value, options);
+      fuse.value = new Fuse(allJobsCache.value, fuseOptions);
     } catch (_err) {
       error.value = 'Failed to load internships. Please try again later.';
     } finally {
@@ -557,8 +543,8 @@
 <style scoped>
   .delete-btn {
     position: absolute;
-    bottom: 13.25rem;
-    left: 30rem;
+    top: 3rem;
+    right: 1rem;
     width: 30px;
     height: 20px;
     border: none;
@@ -572,6 +558,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    z-index: 10;
   }
 
   .delete-btn:hover:not(:disabled) {
@@ -633,6 +620,7 @@
     align-items: flex-start;
     margin-bottom: 0.5rem;
     position: relative;
+    padding-right: 40px;
   }
 
   .company-logo {
@@ -994,8 +982,13 @@
       width: 35px;
       height: 35px;
       font-size: 1.3rem;
-      bottom: 1rem;
-      left: 1rem;
+      top: 0.8rem;
+      right: 0.8rem;
+      border-radius: 6px;
+    }
+
+    .job-header {
+      padding-right: 45px;
     }
   }
 
@@ -1021,6 +1014,7 @@
   }
 
   .job-card {
+    position: relative;
     width: 100%;
     background: linear-gradient(to bottom, #2645a3, #0e1a3d);
     border-radius: 6px;
@@ -1033,7 +1027,6 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    position: relative;
     min-height: 250px;
     overflow: hidden;
   }
