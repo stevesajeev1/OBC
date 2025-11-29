@@ -211,6 +211,20 @@
     search: ''
   });
 
+  const fuseOptions = {
+    keys: [
+      { name: 'title', weight: 2 },
+      { name: 'company.name', weight: 1.5 },
+      { name: 'locations', weight: 1.5 },
+      { name: 'category', weight: 1.2 },
+      { name: 'terms', weight: 1 }
+    ],
+    threshold: 0.4,
+    includeScore: true,
+    minMatchCharLength: 2,
+    shouldSort: true
+  };
+
   const deleteListing = async (listingId: string) => {
     if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       return;
@@ -227,7 +241,7 @@
       }
 
       if (fuse.value) {
-        fuse.value = new Fuse(allJobsCache.value, fuse.value.options);
+        fuse.value = new Fuse(allJobsCache.value, fuseOptions);
       }
     } catch (_err) {
       alert('Failed to delete listing. Please try again.');
@@ -315,7 +329,7 @@
       nextDatabasePage.value++;
 
       if (fuse.value && activeJobs.length > 0) {
-        fuse.value = new Fuse(allJobsCache.value, fuse.value.options);
+        fuse.value = new Fuse(allJobsCache.value, fuseOptions);
       }
 
       if (nextPageJobs.length === 0) {
@@ -342,8 +356,9 @@
             allJobsCache.value.push(...activeJobs);
             nextDatabasePage.value++;
 
+            // FIX: Update the Fuse instance with the new data
             if (fuse.value && activeJobs.length > 0) {
-              fuse.value = new Fuse(allJobsCache.value, fuse.value.options);
+              fuse.value = new Fuse(allJobsCache.value, fuseOptions);
             }
 
             if (nextPageJobs.length === 0) {
