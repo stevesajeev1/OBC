@@ -356,7 +356,6 @@
             allJobsCache.value.push(...activeJobs);
             nextDatabasePage.value++;
 
-            // FIX: Update the Fuse instance with the new data
             if (fuse.value && activeJobs.length > 0) {
               fuse.value = new Fuse(allJobsCache.value, fuseOptions);
             }
