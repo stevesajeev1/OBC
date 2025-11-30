@@ -70,16 +70,12 @@
       </div>
     </nav>
     <router-view />
-
-    <!-- Profile Dialog -->
     <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
       <span>Hi, {{ profile?.name }}!</span>
       <router-link :to="{ name: 'edit-profile' }" @click="profileDialogOpen = false">Manage your Account</router-link>
       <div class="saved-listings-button" @click="goToSavedListings">Saved Listings</div>
       <div id="logout" @click="handleSignOut">Logout</div>
     </dialog>
-
-    <!-- Separate triangle element -->
     <div v-if="profileDialogOpen" id="profile-triangle"></div>
   </div>
 </template>

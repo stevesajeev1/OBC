@@ -123,7 +123,6 @@
         favorites.value = [];
       }
     } catch (_error) {
-      // Prefix with underscore to indicate unused
       favorites.value = [];
     } finally {
       loading.value = false;
@@ -156,7 +155,6 @@
 </script>
 
 <style scoped>
-  /* Your existing CSS remains the same */
   .saved-listings-view {
     width: 100vw;
     padding: 2rem;
