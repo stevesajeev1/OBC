@@ -14,7 +14,6 @@
   });
 
   const profile = computed(() => {
-    if (!user.value) return;
     return getProfile();
   });
 
@@ -25,7 +24,7 @@
   const handleDialogExit = (e: MouseEvent) => {
     let target = e.target as HTMLElement;
     while (target && target.parentElement) {
-      if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
+      if (['nav-profile', 'profile-dialog', 'profile-triangle'].includes(target.id)) return;
       target = target.parentElement;
     }
 
@@ -40,6 +39,11 @@
   const handleSignOut = async () => {
     await signOut();
     router.push({ name: 'login' });
+  };
+
+  const goToSavedListings = () => {
+    profileDialogOpen.value = false;
+    router.push({ name: 'saved-listings' });
   };
 </script>
 
@@ -66,13 +70,17 @@
       </div>
     </nav>
     <router-view />
+
+    <!-- Profile Dialog -->
     <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
-      <div id="profile-dialog-close" @click="profileDialogOpen = false">&#10006;</div>
-      <img :src="profile?.image_url" alt="Profile Picture" />
       <span>Hi, {{ profile?.name }}!</span>
-      <router-link to="/profile" @click="profileDialogOpen = false">Manage your Account</router-link>
+      <router-link :to="{ name: 'edit-profile' }" @click="profileDialogOpen = false">Manage your Account</router-link>
+      <div class="saved-listings-button" @click="goToSavedListings">Saved Listings</div>
       <div id="logout" @click="handleSignOut">Logout</div>
     </dialog>
+
+    <!-- Separate triangle element -->
+    <div v-if="profileDialogOpen" id="profile-triangle"></div>
   </div>
 </template>
 
@@ -224,10 +232,11 @@
     border-radius: 50%;
     border: 2px solid black;
     transition: opacity 0.3s ease;
+    z-index: 1000;
+    position: relative;
   }
 
-  #nav-profile:hover,
-  #profile-dialog-close:hover {
+  #nav-profile:hover {
     cursor: pointer;
   }
 
@@ -240,9 +249,8 @@
 
   #profile-dialog {
     --width: 300px;
-
     position: absolute;
-    top: 100px;
+    top: 105px;
     left: calc(100% - var(--width) - 2rem);
     width: var(--width);
     margin: 0;
@@ -250,31 +258,99 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: #7a9ccf;
+    border: 2px solid #7a9ccf;
+    border-radius: 10px;
+    color: #d4862d;
+    font-family: 'Irish Grover', cursive;
+    z-index: 1001;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+    box-shadow:
+      -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000;
   }
 
-  #profile-dialog-close {
+  #profile-triangle {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: large;
+    top: 95px;
+    left: calc(100% - 79px);
+    width: 20px;
+    height: 20px;
+    background: #7a9ccf;
+    transform: rotate(45deg);
+    z-index: 999;
+    box-shadow:
+      -2px -2px 0 #000,
+      0px -0px 0 #000,
+      -0px 0px 0 #000,
+      0px 0px 0 #000;
   }
 
-  #profile-dialog img {
-    height: auto;
-    width: 50%;
-    object-fit: cover;
+  #profile-dialog span {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
+
+  #profile-dialog a {
+    background: #d4862d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+    box-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+    margin: 10px 0;
+  }
+
+  #profile-dialog a:hover {
+    opacity: 0.8;
   }
 
   #logout {
-    margin-top: 20px;
+    margin-top: 10px;
     background: black;
-    color: white;
+    color: #d4862d;
     padding: 10px 20px;
     transition: opacity 0.3s ease;
+    border-radius: 5px;
+    font-family: 'Irish Grover', cursive;
   }
 
   #logout:hover {
     cursor: pointer;
+    opacity: 0.8;
+  }
+
+  .saved-listings-button {
+    background: #5a7caf;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+    margin: 10px 0;
+    cursor: pointer;
+    border: 1px solid #000;
+    font-family: 'Irish Grover', cursive;
+    text-align: center;
+    box-shadow:
+      -0.5px -0.5px 0 #000,
+      0.5px -0.5px 0 #000,
+      -0.5px 0.5px 0 #000,
+      0.5px 0.5px 0 #000;
+  }
+
+  .saved-listings-button:hover {
     opacity: 0.8;
   }
 

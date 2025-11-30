@@ -8,6 +8,7 @@ export const getProfile = () => {
 
   return {
     name: 'John Doe',
+    email: 'john.doe@example.com',
     image_url: 'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg'
   };
 };
