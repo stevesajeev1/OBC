@@ -29,10 +29,10 @@ export interface Profile {
 }
 
 export interface PaginatedProfileResponse {
-  data: Profile[];
-  page: number;
-  pageSize: number;
-  total: number;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Profile[];
 }
 
 export const getAllProfiles = async (page: number = 0, pageSize: number = 100): Promise<Profile[]> => {
@@ -40,7 +40,7 @@ export const getAllProfiles = async (page: number = 0, pageSize: number = 100): 
     const response = await axiosInstance.get<PaginatedProfileResponse>('/profiles/', {
       params: { page, pageSize }
     });
-    return response.data.data;
+    return response.data.results;
   } catch (error) {
     console.error('Error fetching profiles:', error);
     throw error;
