@@ -8,7 +8,7 @@ class Internship(BaseModel):
 
     company: str
     role: str
-    time_period: list[str]  # ex. Summer 2025
+    time_period: list[str] = []  # ex. Summer 2025
 
 
 class Profile(BaseModel):
