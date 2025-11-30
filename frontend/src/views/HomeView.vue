@@ -564,7 +564,7 @@
           // favs are Listing objects - collect ids
           const ids = new Set<string>();
           if (Array.isArray(favs)) {
-            favs.forEach((f: any) => {
+            favs.forEach((f: Job) => {
               if (f.id) ids.add(f.id);
             });
           }
@@ -602,7 +602,7 @@
       } else {
         await favoriteListing(listingId);
       }
-    } catch (err) {
+    } catch (_err) {
       // revert optimistic update on error
       if (currentlyFavorited) {
         favoritesSet.value.add(listingId);
@@ -638,7 +638,7 @@
   .favorite-btn {
     position: absolute;
     top: 1rem;
-    right: 1.25rem;
+    right: 1rem;
     background: transparent;
     border: none;
     cursor: pointer;
