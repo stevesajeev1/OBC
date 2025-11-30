@@ -73,7 +73,6 @@
 
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
   import ContactPopup from './ContactPopup.vue';
   import { getAllProfiles, type Profile as BackendProfile } from '@/api/profile';
 
@@ -144,7 +143,6 @@
     fetchProfiles();
   });
 
-  const router = useRouter();
   const showPopup = ref(false);
   const selectedPerson = ref<Person | null>(null);
   const searchQuery = ref('');
