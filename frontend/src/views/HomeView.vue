@@ -96,6 +96,19 @@
             {{ deletingListingId === job.item.id ? 'Deleting...' : '×' }}
           </button>
 
+          <button
+            v-if="user"
+            class="favorite-btn"
+            :title="isFavorited(job.item.id) ? 'Unfavorite' : 'Favorite'"
+            @click="toggleFavorite(job.item.id)"
+          >
+            <img
+              :src="isFavorited(job.item.id) ? bookmarkMarked : bookmarkUnmarked"
+              alt="bookmark"
+              class="bookmark-img"
+            />
+          </button>
+
           <div class="job-header">
             <h2>{{ job.item.title }}</h2>
             <img
@@ -156,6 +169,9 @@
   import Fuse from 'fuse.js';
   import { axiosInstance } from '@/api/axios';
   import { user } from '@/state';
+  import bookmarkMarked from '@/assets/bookmark_marked.png';
+  import bookmarkUnmarked from '@/assets/bookmark_unmarked.png';
+  import { getFavorites, favoriteListing, unfavoriteListing } from '@/api/favorites';
 
   enum SponsorshipFilter {
     ALL = 'all',
@@ -196,6 +212,8 @@
   const pageLoading = ref(false);
   const filtersLoading = ref(false);
   const deletingListingId = ref<string | null>(null);
+  const favoritesSet = ref(new Set<string>());
+  const favoritesLoading = ref(false);
 
   const currentPage = ref(1);
   const targetActiveJobsPerPage = 10;
@@ -537,7 +555,63 @@
   onMounted(() => {
     fetchInitialData();
     saveCurrentState();
+    // If user is logged in, fetch their favorites
+    (async () => {
+      try {
+        if (user.value) {
+          favoritesLoading.value = true;
+          const favs = await getFavorites();
+          // favs are Listing objects - collect ids
+          const ids = new Set<string>();
+          if (Array.isArray(favs)) {
+            favs.forEach((f: any) => {
+              if (f.id) ids.add(f.id);
+            });
+          }
+          favoritesSet.value = ids;
+        }
+      } catch (_err) {
+        // ignore - not critical for page load
+      } finally {
+        favoritesLoading.value = false;
+      }
+    })();
   });
+
+  const isFavorited = (listingId: string) => {
+    return favoritesSet.value.has(listingId);
+  };
+
+  const toggleFavorite = async (listingId: string) => {
+    if (!user.value) {
+      alert('Please log in to favorite listings.');
+      return;
+    }
+
+    // optimistic update
+    const currentlyFavorited = isFavorited(listingId);
+    if (currentlyFavorited) {
+      favoritesSet.value.delete(listingId);
+    } else {
+      favoritesSet.value.add(listingId);
+    }
+
+    try {
+      if (currentlyFavorited) {
+        await unfavoriteListing(listingId);
+      } else {
+        await favoriteListing(listingId);
+      }
+    } catch (err) {
+      // revert optimistic update on error
+      if (currentlyFavorited) {
+        favoritesSet.value.add(listingId);
+      } else {
+        favoritesSet.value.delete(listingId);
+      }
+      alert('Failed to update favorite.');
+    }
+  };
 </script>
 
 <style scoped>
@@ -559,6 +633,34 @@
     justify-content: center;
     transition: all 0.3s ease;
     z-index: 10;
+  }
+
+  .favorite-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 11;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+  }
+
+  .favorite-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .bookmark-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6));
   }
 
   .delete-btn:hover:not(:disabled) {
@@ -620,7 +722,7 @@
     align-items: flex-start;
     margin-bottom: 0.5rem;
     position: relative;
-    padding-right: 40px;
+    padding-right: 50px;
   }
 
   .company-logo {
@@ -988,7 +1090,7 @@
     }
 
     .job-header {
-      padding-right: 45px;
+      padding-right: 120px;
     }
   }
 
