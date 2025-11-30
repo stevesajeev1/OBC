@@ -14,7 +14,12 @@
         <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2" />
         <path d="M13 13L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
-      <span :class="$style.searchText">Companies that a gator may have interned at!</span>
+      <input
+        v-model="searchQuery"
+        type="text"
+        :class="$style.searchInput"
+        placeholder="Companies that a gator may have interned at!"
+      />
     </div>
 
     <!-- Filter Positions -->
@@ -27,118 +32,149 @@
       </button>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="loading" :class="$style.loadingContainer">
+      <p :class="$style.loadingText">Loading profiles...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" :class="$style.errorContainer">
+      <p :class="$style.errorText">{{ error }}</p>
+      <button :class="$style.retryButton" @click="fetchProfiles">Retry</button>
+    </div>
+
     <!-- People Grid -->
-    <div :class="$style.peopleGrid">
-      <!-- Row 1 -->
-      <div :class="[$style.profileCard, $style.cardBlue]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
+    <div v-else :class="$style.peopleGrid">
+      <div 
+        v-for="person in filteredPeople" 
+        :key="person.id" 
+        :class="[$style.profileCard, $style[person.cardVariant]]"
+      >
+        <img :src="person.profileImage" alt="Profile" :class="$style.profileImage" />
+        <h3 :class="$style.name">{{ person.fullName }}</h3>
+        <p :class="$style.role">{{ person.role }}</p>
         <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardDark]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardRed]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <!-- Row 2 -->
-      <div :class="[$style.profileCard, $style.cardBlue]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardDark]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardRed]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <!-- Row 3 -->
-      <div :class="[$style.profileCard, $style.cardBlue]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardDark]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
-      </div>
-
-      <div :class="[$style.profileCard, $style.cardRed]">
-        <img :src="profileImage" alt="Profile" :class="$style.profileImage" />
-        <h3 :class="$style.name">Bim Bob</h3>
-        <p :class="$style.role">Software Engineer</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="companyIcon" alt="Company" :class="$style.companyIcon" />
-        <button :class="$style.contactButton" @click="openContact('bim_bob')">Contact</button>
+        <img :src="person.companyIcon" alt="Company" :class="$style.companyIcon" />
+        <button :class="$style.contactButton" @click="openContact(person)">Contact</button>
       </div>
     </div>
 
     <!-- Modal Overlay -->
-    <div v-if="showPopup" :class="$style.overlay" @click.self="closePopup">
-      <ContactPopup :username="selectedUsername" @close="closePopup" />
+    <div v-if="showPopup && selectedPerson" :class="$style.overlay" @click.self="closePopup">
+      <ContactPopup 
+        :username="selectedPerson.username"
+        :full-name="selectedPerson.fullName"
+        :profile-image-url="selectedPerson.profileImage"
+        :company-icon-url="selectedPerson.companyIcon"
+        :email="selectedPerson.email"
+        :instagram="selectedPerson.instagram"
+        :linkedin="selectedPerson.linkedin"
+        @close="closePopup" 
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import ContactPopup from './ContactPopup.vue';
+import { getAllProfiles, type Profile as BackendProfile } from '@/api/profile';
 
+interface Person {
+  id: number;
+  username: string;
+  fullName: string;
+  role: string;
+  profileImage: string;
+  companyIcon: string;
+  companyName: string;
+  email: string;
+  instagram: string;
+  linkedin: string;
+  cardVariant: 'cardBlue' | 'cardDark' | 'cardRed';
+}
 
-const profileImage = ref('https://media.discordapp.net/attachments/778002970112557116/1443639418362789928/bimbob.png?ex=6929cd7a&is=69287bfa&hm=f28318ffc79a8e4d6c0a364b07a3fef787cd450974fbcee180e634d054abeaff&=&format=webp&quality=lossless');
-const companyIcon = ref('https://media.discordapp.net/attachments/778002970112557116/1443639943519014912/googlelogo.png?ex=6929cdf8&is=69287c78&hm=d4336bb1cfdaa688b3a04d0a806ed5f512e13ee321e4a1d583d5e6f5960e7a35&=&format=webp&quality=lossless');
+const people = ref<Person[]>([]);
+
+// Function to map backend profile to frontend Person
+function mapProfileToPerson(profile: BackendProfile, index: number): Person {
+  const variants: Array<'cardBlue' | 'cardDark' | 'cardRed'> = ['cardBlue', 'cardDark', 'cardRed'];
+  const latestInternship = profile.prev_internships?.[0];
+  
+  // Generate username from full_name or use default
+  const username = profile.full_name 
+    ? profile.full_name.toLowerCase().replace(/\s+/g, '_')
+    : `user_${index}`;
+  
+  // Extract LinkedIn username from URL
+  const linkedinUsername = profile.linkedin_url
+    ? profile.linkedin_url.split('/').pop() || profile.full_name || ''
+    : profile.full_name || '';
+  
+  return {
+    id: index + 1,
+    username,
+    fullName: profile.full_name || 'Anonymous User',
+    role: latestInternship?.role || profile.major || 'Student',
+    profileImage: profile.image_url || 'https://media.discordapp.net/attachments/778002970112557116/1443639418362789928/bimbob.png?ex=6929cd7a&is=69287bfa&hm=f28318ffc79a8e4d6c0a364b07a3fef787cd450974fbcee180e634d054abeaff&=&format=webp&quality=lossless',
+    companyIcon: 'https://media.discordapp.net/attachments/778002970112557116/1443639943519014912/googlelogo.png?ex=6929cdf8&is=69287c78&hm=d4336bb1cfdaa688b3a04d0a806ed5f512e13ee321e4a1d583d5e6f5960e7a35&=&format=webp&quality=lossless',
+    companyName: latestInternship?.company || 'N/A',
+    email: '', // Backend doesn't expose email in public profiles
+    instagram: '', // Backend doesn't have instagram
+    linkedin: linkedinUsername,
+    cardVariant: variants[index % 3]
+  };
+}
+
+// Fetch profiles from backend
+async function fetchProfiles() {
+  loading.value = true;
+  error.value = null;
+  try {
+    const profiles = await getAllProfiles();
+    people.value = profiles.map((profile, index) => mapProfileToPerson(profile, index));
+  } catch (err) {
+    error.value = 'Failed to load profiles. Please try again later.';
+    console.error('Error fetching profiles:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Fetch profiles on component mount
+onMounted(() => {
+  fetchProfiles();
+});
 
 const router = useRouter();
 const showPopup = ref(false);
-const selectedUsername = ref('');
-function openContact(username: string) {
-  selectedUsername.value = username;
+const selectedPerson = ref<Person | null>(null);
+const searchQuery = ref('');
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+const filteredPeople = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return people.value;
+  }
+  
+  const query = searchQuery.value.toLowerCase();
+  return people.value.filter(person => 
+    person.companyName.toLowerCase().includes(query) ||
+    person.fullName.toLowerCase().includes(query) ||
+    person.role.toLowerCase().includes(query)
+  );
+});
+
+function openContact(person: Person) {
+  selectedPerson.value = person;
   showPopup.value = true;
 }
+
 function closePopup() {
   showPopup.value = false;
+  selectedPerson.value = null;
 }
 </script>
 
@@ -191,6 +227,22 @@ function closePopup() {
 .searchText {
   font-family: 'Irish Grover', cursive;
   font-size: 24px;
+  color: white;
+  opacity: 0.5;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Irish Grover', cursive;
+  font-size: 24px;
+  color: white;
+  padding: 0;
+}
+
+.searchInput::placeholder {
   color: white;
   opacity: 0.5;
 }
@@ -349,6 +401,54 @@ function closePopup() {
   justify-content: center;
   padding: 24px;
   z-index: 1000;
+}
+
+.loadingContainer {
+  max-width: 1066px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.loadingText {
+  font-family: 'Irish Grover', cursive;
+  font-size: 24px;
+  color: white;
+  margin: 0;
+}
+
+.errorContainer {
+  max-width: 1066px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.errorText {
+  font-family: 'Irish Grover', cursive;
+  font-size: 20px;
+  color: white;
+  margin: 0 0 20px 0;
+}
+
+.retryButton {
+  background-color: #d4862d;
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-family: 'Irish Grover', cursive;
+  font-size: 18px;
+  color: #fafafa;
+  text-shadow: 1px 0 0 #000, 0 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retryButton:hover {
+  background-color: #c07527;
+  transform: translateY(-1px);
+}
+
+.retryButton:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 1200px) {

@@ -16,15 +16,15 @@
     <div :class="$style.emailParent">
       <div :class="$style.email">
         <img :src="emailIcon" :class="$style.miemailIcon" alt="email" />
-        <div :class="$style.bimbobgmailcom">bimbob@gmail.com</div>
+        <div :class="$style.bimbobgmailcom">{{ props.email }}</div>
       </div>
       <div :class="$style.instagram">
         <img :src="instagramIcon" :class="$style.miemailIcon" alt="instagram" />
-        <div :class="$style.bimbobgmailcom">bimbob_insta</div>
+        <div :class="$style.bimbobgmailcom">{{ props.instagram }}</div>
       </div>
       <div :class="$style.instagram">
         <img :src="linkedinIcon" :class="$style.mdilinkedinIcon" alt="linkedin" />
-        <div :class="$style.bimbobgmailcom">Bim Bob</div>
+        <div :class="$style.bimbobgmailcom">{{ props.linkedin }}</div>
       </div>
     </div>
   </div>
@@ -38,8 +38,14 @@ const props = withDefaults(defineProps<{
   fullName?: string;
   profileImageUrl?: string;
   companyIconUrl?: string;
+  email?: string;
+  instagram?: string;
+  linkedin?: string;
 }>(), {
-  username: 'bim_bob'
+  username: 'bim_bob',
+  email: 'bimbob@gmail.com',
+  instagram: 'bimbob_insta',
+  linkedin: 'Bim Bob'
 });
 
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -129,7 +135,8 @@ const linkedinIcon = ref(
   position: absolute;
   top: 365px;
   left: 327px;
-  width: 244px;
+  width: auto;
+  max-width: 500px;
   height: 77px;
   font-size: 64px;
   font-family: 'Irish Grover';
@@ -139,6 +146,7 @@ const linkedinIcon = ref(
   top: 0px;
   left: 0px;
   text-shadow: 1px 0 0 #000, 0 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+  white-space: nowrap;
 }
 .backArrowIcon {
   position: absolute;
