@@ -47,7 +47,6 @@
     image_url: ''
   });
 
-  // Load current profile data
   onMounted(async () => {
     const currentProfile = getProfile();
     if (currentProfile) {
