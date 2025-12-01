@@ -4,12 +4,12 @@
   import { user } from './state';
   import { signOut } from './api/auth';
   import { useRouter } from 'vue-router';
+  import defaultPfp from '@/assets/default_pfp.jpg';
 
   const router = useRouter();
 
   const profileDialogOpen = ref<boolean>(false);
 
-  // Actual profile data
   const profileData = ref<Profile | null>(null);
 
   onMounted(async () => {
@@ -21,10 +21,7 @@
   });
 
   const profileImageUrl = computed(() => {
-    return (
-      profileData.value?.image_url ||
-      'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg'
-    );
+    return profileData.value?.image_url || defaultPfp;
   });
 
   const profileName = computed(() => {
@@ -41,7 +38,6 @@
       if (['nav-profile', 'profile-dialog', 'profile-triangle'].includes(target.id)) return;
       target = target.parentElement;
     }
-
     profileDialogOpen.value = false;
   };
 
@@ -77,6 +73,7 @@
       <div class="nav-links">
         <router-link to="/" class="nav-link">Home</router-link>
         <router-link to="/internships" class="nav-link">Internships</router-link>
+        <router-link to="/networking" class="nav-link">Networking</router-link>
         <router-link to="/team" class="nav-link">About</router-link>
         <template v-if="user === null">
           <router-link to="/login" class="nav-link join-now">Login</router-link>
@@ -142,7 +139,7 @@
     left: 0;
     right: 0;
     height: 100px;
-    z-index: 1000;
+    z-index: 999;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -298,7 +295,7 @@
     height: 20px;
     background: #7a9ccf;
     transform: rotate(45deg);
-    z-index: 999;
+    z-index: 1001;
     box-shadow:
       -2px -2px 0 #000,
       0px -0px 0 #000,

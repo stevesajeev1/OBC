@@ -1,5 +1,6 @@
 import { axiosInstance } from './axios';
 import type { PaginatedResponse } from './util';
+import defaultPfp from '@/assets/default_pfp.jpg';
 
 export interface Internship {
   company: string;
@@ -33,12 +34,19 @@ export interface ProfileUpdate {
 export const getProfile = async (): Promise<Profile | null> => {
   try {
     const response = await axiosInstance.get<Profile>('/profiles/me');
-    return response.data;
+    const profile = response.data;
+
+    // Fallback image
+    if (!profile.image_url) {
+      profile.image_url = defaultPfp;
+    }
+
+    return profile;
   } catch (error) {
     console.error('Error fetching profile:', error);
     return {
       full_name: null,
-      image_url: 'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg',
+      image_url: defaultPfp,
       major: null,
       grad_year: null,
       linkedin_url: null,
@@ -52,7 +60,11 @@ export const getProfile = async (): Promise<Profile | null> => {
 export const updateProfile = async (profileData: ProfileUpdate): Promise<Profile> => {
   try {
     const response = await axiosInstance.patch<Profile>('/profiles/me', profileData);
-    return response.data;
+    const profile = response.data;
+    if (!profile.image_url) {
+      profile.image_url = defaultPfp;
+    }
+    return profile;
   } catch (error) {
     console.error('Error updating profile:', error);
     throw error;
@@ -88,7 +100,10 @@ export const getAllProfiles = async (page: number = 0, pageSize: number = 100): 
     const response = await axiosInstance.get<PaginatedResponse<Profile>>('/profiles/', {
       params: { page, pageSize }
     });
-    return response.data.results;
+    return response.data.results.map(profile => {
+      if (!profile.image_url) profile.image_url = defaultPfp;
+      return profile;
+    });
   } catch (error) {
     console.error('Error fetching profiles:', error);
     throw error;

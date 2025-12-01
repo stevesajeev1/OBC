@@ -7,7 +7,6 @@
       </div>
 
       <div class="modal-content">
-        <!-- Profile Image Section -->
         <div class="profile-image-section">
           <div class="image-preview">
             <img :src="profileImageUrl" alt="Profile Preview" class="profile-preview" />
@@ -33,7 +32,6 @@
           </button>
         </div>
 
-        <!-- Full Name -->
         <div class="form-group">
           <label for="full_name">Full Name *</label>
           <input
@@ -46,13 +44,11 @@
           <span class="error-message" v-if="!form.full_name?.trim()">Full name is required</span>
         </div>
 
-        <!-- Major -->
         <div class="form-group">
           <label for="major">Major</label>
           <input type="text" id="major" v-model="form.major" placeholder="e.g., Computer Science" class="form-input" />
         </div>
 
-        <!-- Graduation Year -->
         <div class="form-group">
           <label for="grad_year">Graduation Year</label>
           <input
@@ -66,7 +62,6 @@
           />
         </div>
 
-        <!-- LinkedIn URL -->
         <div class="form-group">
           <label for="linkedin_url">LinkedIn URL</label>
           <input
@@ -78,7 +73,6 @@
           />
         </div>
 
-        <!-- Bio -->
         <div class="form-group">
           <label for="bio">Bio</label>
           <textarea
@@ -90,7 +84,6 @@
           ></textarea>
         </div>
 
-        <!-- Public Profile Checkbox -->
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
             <input type="checkbox" v-model="form.public" class="checkbox" />
@@ -99,7 +92,6 @@
           <small class="hint">When checked, other users can see your profile</small>
         </div>
 
-        <!-- Modal Actions -->
         <div class="modal-actions">
           <button class="cancel-button" @click="closeModal" :disabled="loading || imageUploading">Cancel</button>
           <button class="save-button" @click="saveProfile" :disabled="!canSave || loading || imageUploading">
@@ -115,10 +107,10 @@
   import { ref, onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
   import { getProfile, updateProfile, uploadProfileImage, deleteProfileImage, type ProfileUpdate } from '@/api/profile';
+  import defaultPfp from '@/assets/default_pfp.jpg';
 
   const router = useRouter();
 
-  const defaultAvatar = 'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg';
   const loading = ref(false);
   const imageUploading = ref(false);
 
@@ -134,7 +126,7 @@
 
   const originalProfile = ref<ProfileUpdate | null>(null);
 
-  const profileImageUrl = computed(() => form.value.image_url || defaultAvatar);
+  const profileImageUrl = computed(() => form.value.image_url || defaultPfp);
 
   const canSave = computed(() => !!form.value?.full_name?.trim().length);
 
@@ -143,7 +135,6 @@
     return JSON.stringify(form.value) !== JSON.stringify(originalProfile.value);
   });
 
-  // Load current profile
   onMounted(async () => {
     try {
       loading.value = true;
@@ -156,7 +147,7 @@
           grad_year: currentProfile.grad_year,
           linkedin_url: currentProfile.linkedin_url,
           bio: currentProfile.bio,
-          image_url: currentProfile.image_url,
+          image_url: currentProfile.image_url || defaultPfp,
           public: currentProfile.public !== false
         };
       }
@@ -173,7 +164,6 @@
     router.back();
   };
 
-  // Upload new profile image
   const handleImageUpload = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -196,7 +186,7 @@
         await uploadProfileImage(file);
 
         const updatedProfile = await getProfile();
-        if (updatedProfile?.image_url) form.value.image_url = updatedProfile.image_url;
+        form.value.image_url = updatedProfile?.image_url || defaultPfp;
 
         alert('Profile image updated successfully!');
         input.value = '';
@@ -209,14 +199,13 @@
     }
   };
 
-  // Remove profile image
   const removeProfileImage = async () => {
     if (!confirm('Are you sure you want to remove your profile image?')) return;
 
     try {
       imageUploading.value = true;
       await deleteProfileImage();
-      form.value.image_url = null;
+      form.value.image_url = defaultPfp;
       alert('Profile image removed successfully!');
     } catch (error) {
       console.error('Failed to remove image:', error);
@@ -226,7 +215,6 @@
     }
   };
 
-  // Save profile changes
   const saveProfile = async () => {
     if (!canSave.value) {
       alert('Please provide a full name to save your profile.');
@@ -254,11 +242,6 @@
 </script>
 
 <style scoped>
-  /* Keep all your existing styles, including profile image, buttons, modal, etc. */
-</style>
-
-<style scoped>
-  /* Your existing styles remain the same, just add this new button style */
   .remove-image-button {
     display: block;
     background: #ff6b6b;
@@ -286,7 +269,6 @@
     cursor: not-allowed;
   }
 
-  /* Your existing styles below... */
   .edit-profile-modal-overlay {
     position: fixed;
     top: 0;
