@@ -22,16 +22,6 @@
       />
     </div>
 
-    <!-- Filter Positions -->
-    <div :class="$style.filterPositions">
-      <button :class="$style.filterButton">
-        <span :class="$style.filterText">Filter Positions</span>
-        <svg :class="$style.dropdownIcon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
-      </button>
-    </div>
-
     <!-- Loading State -->
     <div v-if="loading" :class="$style.loadingContainer">
       <p :class="$style.loadingText">Loading profiles...</p>
@@ -49,8 +39,18 @@
         <img :src="person.profileImage" alt="Profile" :class="$style.profileImage" />
         <h3 :class="$style.name">{{ person.fullName }}</h3>
         <p :class="$style.role">{{ person.role }}</p>
-        <p :class="$style.internedAt">Interned at:</p>
-        <img :src="person.companyIcon" alt="Company" :class="$style.companyIcon" />
+        <div :class="$style.internshipRow">
+          <span :class="$style.internedAt">Interned at:</span>
+          <div :class="$style.companyIconsRow">
+            <img
+              v-for="(icon, idx) in person.companyIcons"
+              :key="idx"
+              :src="icon"
+              alt="Company"
+              :class="$style.companyIcon"
+            />
+          </div>
+        </div>
         <button :class="$style.contactButton" @click="openContact(person)">Contact</button>
       </div>
     </div>
@@ -61,10 +61,13 @@
         :username="selectedPerson.username"
         :full-name="selectedPerson.fullName"
         :profile-image-url="selectedPerson.profileImage"
-        :company-icon-url="selectedPerson.companyIcon"
+        :company-icon-url="selectedPerson.companyIcons[0]"
         :email="selectedPerson.email"
         :instagram="selectedPerson.instagram"
         :linkedin="selectedPerson.linkedin"
+        :roles="selectedPerson.roles"
+        :company-icons="selectedPerson.companyIcons"
+        :company-names="selectedPerson.companyNames"
         @close="closePopup"
       />
     </div>
@@ -72,9 +75,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import ContactPopup from './ContactPopup.vue';
   import { getAllProfiles, type Profile as BackendProfile } from '@/api/profile';
+  import { getAllCompanies, type Company } from '@/api/companies';
+  import Fuse from 'fuse.js';
 
   interface Person {
     id: number;
@@ -82,43 +87,46 @@
     fullName: string;
     role: string;
     profileImage: string;
-    companyIcon: string;
-    companyName: string;
+    companyIcons: string[];
+    companyNames: string[];
     email: string;
     instagram: string;
     linkedin: string;
+    roles: string[];
     cardVariant: 'cardBlue' | 'cardDark' | 'cardRed';
   }
 
   const people = ref<Person[]>([]);
+  const companyLogoMap = ref<Record<string, string>>({});
 
   // Function to map backend profile to frontend Person
   function mapProfileToPerson(profile: BackendProfile, index: number): Person {
     const variants: Array<'cardBlue' | 'cardDark' | 'cardRed'> = ['cardBlue', 'cardDark', 'cardRed'];
-    const latestInternship = profile.prev_internships?.[0];
+    const internships = profile.prev_internships || [];
 
-    // Generate username from full_name or use default
-    const username = profile.full_name ? profile.full_name.toLowerCase().replace(/\s+/g, '_') : `user_${index}`;
+    const username = profile.full_name;
 
-    // Extract LinkedIn username from URL
-    const linkedinUsername = profile.linkedin_url
-      ? profile.linkedin_url.split('/').pop() || profile.full_name || ''
-      : profile.full_name || '';
+    // Use the LinkedIn profile URL directly from backend
+    const linkedinUrl = profile.linkedin_url || '';
+
+    const companyNames = internships.map(i => i.company).filter(Boolean);
+    const companyIcons = companyNames.map(
+      name => companyLogoMap.value[name] || 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/buildkite.svg'
+    );
+    const roles = internships.map(i => i.role).filter(Boolean);
 
     return {
       id: index + 1,
       username,
       fullName: profile.full_name || 'Anonymous User',
-      role: latestInternship?.role || profile.major || 'Student',
-      profileImage:
-        profile.image_url ||
-        'https://media.discordapp.net/attachments/778002970112557116/1443639418362789928/bimbob.png?ex=6929cd7a&is=69287bfa&hm=f28318ffc79a8e4d6c0a364b07a3fef787cd450974fbcee180e634d054abeaff&=&format=webp&quality=lossless',
-      companyIcon:
-        'https://media.discordapp.net/attachments/778002970112557116/1443639943519014912/googlelogo.png?ex=6929cdf8&is=69287c78&hm=d4336bb1cfdaa688b3a04d0a806ed5f512e13ee321e4a1d583d5e6f5960e7a35&=&format=webp&quality=lossless',
-      companyName: latestInternship?.company || 'N/A',
+      role: internships[0]?.role || profile.major || 'Student',
+      profileImage: profile.image_url || new URL('./assets/default_pfp.jpg', import.meta.url).href,
+      companyIcons,
+      companyNames,
       email: '', // Backend doesn't expose email in public profiles
       instagram: '', // Backend doesn't have instagram
-      linkedin: linkedinUsername,
+      linkedin: linkedinUrl,
+      roles,
       cardVariant: variants[index % 3]
     };
   }
@@ -128,6 +136,13 @@
     loading.value = true;
     error.value = null;
     try {
+      // Fetch companies and build logo map first
+      const companies = await getAllCompanies();
+      companyLogoMap.value = companies.reduce((acc: Record<string, string>, c: Company) => {
+        if (c.name) acc[c.name] = c.logo_url || acc[c.name] || '';
+        return acc;
+      }, {});
+
       const profiles = await getAllProfiles();
       people.value = profiles.map((profile, index) => mapProfileToPerson(profile, index));
     } catch (err) {
@@ -149,18 +164,30 @@
   const loading = ref(true);
   const error = ref<string | null>(null);
 
-  const filteredPeople = computed(() => {
-    if (!searchQuery.value.trim()) {
-      return people.value;
-    }
+  // Setup Fuse.js for fuzzy search across person data
+  const fuse = ref<Fuse<Person> | null>(null);
+  const fuseOptions: Fuse.IFuseOptions<Person> = {
+    includeScore: true,
+    threshold: 0.35,
+    ignoreLocation: true,
+    keys: ['fullName', 'role', { name: 'companyNames', weight: 0.8 }]
+  };
 
-    const query = searchQuery.value.toLowerCase();
-    return people.value.filter(
-      person =>
-        person.companyName.toLowerCase().includes(query) ||
-        person.fullName.toLowerCase().includes(query) ||
-        person.role.toLowerCase().includes(query)
-    );
+  // Reinitialize Fuse index whenever people change
+  watch(
+    people,
+    list => {
+      fuse.value = new Fuse(list, fuseOptions);
+    },
+    { immediate: true }
+  );
+
+  const filteredPeople = computed(() => {
+    const query = searchQuery.value.trim();
+    if (!query) return people.value;
+    if (!fuse.value) return people.value;
+    const results = fuse.value.search(query);
+    return results.map(r => r.item);
   });
 
   function openContact(person: Person) {
@@ -179,7 +206,7 @@
     min-height: 100vh;
     width: 100%;
     background: linear-gradient(180deg, #5a7caf 74.52%, #b5b5b5 100%);
-    padding-top: 120px;
+    padding-top: 80px;
     padding-bottom: 40px;
     position: relative;
     overflow-x: hidden;
@@ -337,6 +364,11 @@
     color: white;
     margin: 0 0 0 84px;
     font-weight: 400;
+    /* Prevent layout shift on long names */
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .role {
@@ -345,24 +377,37 @@
     color: white;
     margin: 4px 0 0 84px;
     font-weight: 400;
+    /* Keep role on one line with ellipsis */
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .internedAt {
     font-family: 'Inria Sans', sans-serif;
     font-size: 20px;
     color: white;
-    margin: 18px 0 0 0;
     font-weight: 400;
   }
 
+  .internshipRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 0 0;
+  }
+
   .companyIcon {
-    position: absolute;
-    top: 80px;
-    left: 139px;
     width: 30px;
     height: 30px;
     border-radius: 50%;
     object-fit: cover;
+  }
+
+  .companyIconsRow {
+    display: flex;
+    gap: 8px;
   }
 
   .contactButton {

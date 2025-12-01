@@ -28,16 +28,17 @@ export interface Profile {
   public: boolean;
 }
 
-export interface PaginatedProfileResponse {
+// Generic paginated response that can wrap any item type
+export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
   previous: string | null;
-  results: Profile[];
+  results: T[];
 }
 
 export const getAllProfiles = async (page: number = 0, pageSize: number = 100): Promise<Profile[]> => {
   try {
-    const response = await axiosInstance.get<PaginatedProfileResponse>('/profiles/', {
+    const response = await axiosInstance.get<PaginatedResponse<Profile>>('/profiles/', {
       params: { page, pageSize }
     });
     return response.data.results;

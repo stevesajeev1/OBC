@@ -3,8 +3,13 @@
     <div :class="$style.card2" />
     <div :class="$style.bimBob">{{ handle }}</div>
     <div :class="$style.prevInternships">
-      <div :class="$style.internedAt">Interned at:</div>
-      <img :src="companyIcon" :class="$style.phIcon" alt="company" />
+      <div :class="$style.internedAt">Interned&nbsp;at:</div>
+      <div :class="$style.companyIconsRow">
+        <div v-for="(icon, idx) in companyIcons" :key="idx" :class="$style.companyItem">
+          <img :src="icon" :class="$style.phIcon" alt="company" @error="onCompanyLogoError" />
+          <span :class="$style.companyName">{{ companyNames[idx] || '' }}</span>
+        </div>
+      </div>
     </div>
     <div :class="$style.name">
       <div :class="$style.bimBob2">{{ fullName }}</div>
@@ -24,7 +29,14 @@
       </div>
       <div :class="$style.instagram">
         <img :src="linkedinIcon" :class="$style.mdilinkedinIcon" alt="linkedin" />
-        <div :class="$style.bimbobgmailcom">{{ props.linkedin }}</div>
+        <a :href="linkedinHref" :class="$style.bimbobgmailcom" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <!-- Roles List -->
+      <div :class="$style.rolesList">
+        <div :class="$style.internedAt">Roles:</div>
+        <ul :class="$style.rolesUl">
+          <li v-for="(role, idx) in roles" :key="idx">{{ role }}</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -42,12 +54,18 @@
       email?: string;
       instagram?: string;
       linkedin?: string;
+      roles?: string[];
+      companyIcons?: string[];
+      companyNames?: string[];
     }>(),
     {
       username: 'bim_bob',
       email: 'bimbob@gmail.com',
       instagram: 'bimbob_insta',
-      linkedin: 'Bim Bob'
+      linkedin: 'Bim Bob',
+      roles: () => [],
+      companyIcons: () => [],
+      companyNames: () => []
     }
   );
 
@@ -65,16 +83,16 @@
   );
 
   // Image assets (allow override via props)
-  const profileImage = computed(
-    () =>
-      props.profileImageUrl ||
-      'https://media.discordapp.net/attachments/778002970112557116/1443639418362789928/bimbob.png?ex=6929cd7a&is=69287bfa&hm=f28318ffc79a8e4d6c0a364b07a3fef787cd450974fbcee180e634d054abeaff&=&format=webp&quality=lossless'
+  const profileImage = computed(() => props.profileImageUrl || '/assets/default_pfp.jpg');
+  const companyIcons = computed(() =>
+    props.companyIcons && props.companyIcons.length
+      ? props.companyIcons
+      : props.companyIconUrl
+        ? [props.companyIconUrl]
+        : []
   );
-  const companyIcon = computed(
-    () =>
-      props.companyIconUrl ||
-      'https://media.discordapp.net/attachments/778002970112557116/1443639943519014912/googlelogo.png?ex=6929cdf8&is=69287c78&hm=d4336bb1cfdaa688b3a04d0a806ed5f512e13ee321e4a1d583d5e6f5960e7a35&=&format=webp&quality=lossless'
-  );
+  const roles = computed(() => props.roles || []);
+  const companyNames = computed(() => props.companyNames || []);
   // Simple inline SVG left arrow as data URL
   const backIcon = ref(
     'data:image/svg+xml;utf8,' +
@@ -102,6 +120,21 @@
         '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-14h4v2a4 4 0 0 1 4-2z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>'
       )
   );
+
+  const linkedinHref = computed(() => {
+    const v = props.linkedin || '';
+    if (!v) return 'https://www.linkedin.com';
+    if (/^https?:\/\//i.test(v)) return v;
+    if (v.startsWith('www.linkedin.com')) return `https://${v}`;
+    return `https://www.linkedin.com/in/${v}`;
+  });
+
+  function onCompanyLogoError(e: Event) {
+    const img = e.target as HTMLImageElement;
+    if (img && !img.src.endsWith('/assets/default_company.jpeg')) {
+      img.src = '/assets/default_company.jpeg';
+    }
+  }
 </script>
 
 <style module>
@@ -113,7 +146,7 @@
     text-align: left;
     font-size: 24px;
     color: #fff;
-    font-family: 'Inria Sans';
+    font-family: 'Irish Grover';
   }
   .card2 {
     position: absolute;
@@ -135,14 +168,33 @@
   .prevInternships {
     position: absolute;
     top: 507px;
-    left: 574px;
+    left: 540px;
     display: flex;
+    flex-wrap: nowrap;
     align-items: flex-end;
-    gap: 17px;
+    gap: 12px;
     font-size: 36px;
   }
   .internedAt {
     position: relative;
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+  .companyIconsRow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .companyItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .companyName {
+    font-family: 'Irish Grover';
+    font-size: 24px;
+    line-height: 1.1;
+    white-space: nowrap;
   }
   .phIcon {
     height: 40px;
@@ -154,17 +206,18 @@
   .name {
     position: absolute;
     top: 365px;
-    left: 327px;
+    left: 50%;
+    transform: translateX(-50%);
     width: auto;
-    max-width: 500px;
+    max-width: 600px;
     height: 77px;
     font-size: 64px;
     font-family: 'Irish Grover';
+    text-align: center;
   }
   .bimBob2 {
-    position: absolute;
+    position: relative;
     top: 0px;
-    left: 0px;
     text-shadow:
       1px 0 0 #000,
       0 1px 0 #000,
@@ -205,7 +258,9 @@
     text-align: left;
     font-size: 24px;
     color: #fff;
-    font-family: 'Inria Sans';
+    font-family: 'Irish Grover';
+    /* Ensure children (roles list) can scroll within this area */
+    overflow: hidden;
   }
   .email {
     align-self: stretch;
@@ -230,5 +285,20 @@
     width: 45px;
     position: relative;
     max-height: 100%;
+  }
+  .rolesList {
+    margin-top: 8px;
+    color: #fff;
+    font-family: 'Irish Grover';
+    /* Take remaining space and enable vertical scrolling for long lists */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 8px; /* space for scrollbar */
+  }
+  .rolesUl {
+    margin: 6px 0 0 0;
+    padding: 0 0 0 18px;
+    list-style: disc;
   }
 </style>
