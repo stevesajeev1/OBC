@@ -48,6 +48,7 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import Fuse from 'fuse.js';
+  import { getFavorites } from '@/api/favorites';
 
   interface Company {
     name: string;
@@ -106,23 +107,11 @@
 
   const loadFavorites = async () => {
     loading.value = true;
-
     try {
-      const response = await fetch('/api/favorites', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        favorites.value = await response.json();
-        fuse.value = new Fuse(favorites.value, fuseOptions);
-      } else {
-        favorites.value = [];
-      }
-    } catch (_error) {
+      favorites.value = await getFavorites();
+      fuse.value = new Fuse(favorites.value, fuseOptions);
+    } catch (error) {
+      console.error('Failed to load favorites:', error);
       favorites.value = [];
     } finally {
       loading.value = false;

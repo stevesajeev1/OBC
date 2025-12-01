@@ -7,27 +7,104 @@
       </div>
 
       <div class="modal-content">
+        <!-- Profile Image Section -->
         <div class="profile-image-section">
           <div class="image-preview">
-            <img :src="form.image_url" alt="Profile Preview" class="profile-preview" />
+            <img :src="profileImageUrl" alt="Profile Preview" class="profile-preview" />
           </div>
-          <input type="file" accept="image/*" @change="handleImageUpload" class="file-input" id="profile-image-input" />
-          <label for="profile-image-input" class="upload-button"> Change Profile Picture </label>
+          <input
+            type="file"
+            accept="image/*"
+            @change="handleImageUpload"
+            class="file-input"
+            id="profile-image-input"
+            :disabled="imageUploading"
+          />
+          <label for="profile-image-input" class="upload-button" :class="{ disabled: imageUploading }">
+            {{ imageUploading ? 'Uploading...' : 'Change Profile Picture' }}
+          </label>
+          <button
+            v-if="form.image_url"
+            class="remove-image-button"
+            @click="removeProfileImage"
+            :disabled="imageUploading"
+          >
+            Remove Image
+          </button>
         </div>
 
+        <!-- Full Name -->
         <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" v-model="form.name" placeholder="Enter your full name" class="form-input" />
+          <label for="full_name">Full Name *</label>
+          <input
+            type="text"
+            id="full_name"
+            v-model="form.full_name"
+            placeholder="Enter your full name"
+            class="form-input"
+          />
+          <span class="error-message" v-if="!form.full_name?.trim()">Full name is required</span>
         </div>
 
+        <!-- Major -->
         <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" v-model="form.email" placeholder="Enter your email" class="form-input" />
+          <label for="major">Major</label>
+          <input type="text" id="major" v-model="form.major" placeholder="e.g., Computer Science" class="form-input" />
         </div>
 
+        <!-- Graduation Year -->
+        <div class="form-group">
+          <label for="grad_year">Graduation Year</label>
+          <input
+            type="number"
+            id="grad_year"
+            v-model="form.grad_year"
+            placeholder="e.g., 2025"
+            class="form-input"
+            min="2000"
+            :max="new Date().getFullYear() + 6"
+          />
+        </div>
+
+        <!-- LinkedIn URL -->
+        <div class="form-group">
+          <label for="linkedin_url">LinkedIn URL</label>
+          <input
+            type="url"
+            id="linkedin_url"
+            v-model="form.linkedin_url"
+            placeholder="https://linkedin.com/in/yourprofile"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Bio -->
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea
+            id="bio"
+            v-model="form.bio"
+            placeholder="Tell us about yourself..."
+            class="form-input textarea"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Public Profile Checkbox -->
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="form.public" class="checkbox" />
+            Make profile public
+          </label>
+          <small class="hint">When checked, other users can see your profile</small>
+        </div>
+
+        <!-- Modal Actions -->
         <div class="modal-actions">
-          <button class="cancel-button" @click="closeModal">Cancel</button>
-          <button class="save-button" @click="saveProfile">Save Changes</button>
+          <button class="cancel-button" @click="closeModal" :disabled="loading || imageUploading">Cancel</button>
+          <button class="save-button" @click="saveProfile" :disabled="!canSave || loading || imageUploading">
+            {{ loading ? 'Saving...' : 'Save Changes' }}
+          </button>
         </div>
       </div>
     </div>
@@ -35,58 +112,181 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
-  import { getProfile } from '@/api/profile';
+  import { getProfile, updateProfile, uploadProfileImage, deleteProfileImage, type ProfileUpdate } from '@/api/profile';
 
   const router = useRouter();
 
-  const form = ref({
-    name: '',
-    email: '',
-    image_url: ''
+  const defaultAvatar = 'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg';
+  const loading = ref(false);
+  const imageUploading = ref(false);
+
+  const form = ref<ProfileUpdate>({
+    full_name: '',
+    major: null,
+    grad_year: null,
+    linkedin_url: null,
+    bio: null,
+    image_url: null,
+    public: true
   });
 
+  const originalProfile = ref<ProfileUpdate | null>(null);
+
+  const profileImageUrl = computed(() => form.value.image_url || defaultAvatar);
+
+  const canSave = computed(() => !!form.value?.full_name?.trim().length);
+
+  const hasChanges = computed(() => {
+    if (!originalProfile.value) return false;
+    return JSON.stringify(form.value) !== JSON.stringify(originalProfile.value);
+  });
+
+  // Load current profile
   onMounted(async () => {
-    const currentProfile = getProfile();
-    if (currentProfile) {
-      form.value = {
-        name: currentProfile.name || '',
-        email: currentProfile.email || '',
-        image_url:
-          currentProfile.image_url ||
-          'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg'
-      };
+    try {
+      loading.value = true;
+      const currentProfile = await getProfile();
+      if (currentProfile) {
+        originalProfile.value = { ...currentProfile };
+        form.value = {
+          full_name: currentProfile.full_name || '',
+          major: currentProfile.major,
+          grad_year: currentProfile.grad_year,
+          linkedin_url: currentProfile.linkedin_url,
+          bio: currentProfile.bio,
+          image_url: currentProfile.image_url,
+          public: currentProfile.public !== false
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      alert('Failed to load profile data.');
+    } finally {
+      loading.value = false;
     }
   });
 
   const closeModal = () => {
+    if (hasChanges.value && !confirm('You have unsaved changes. Are you sure you want to leave?')) return;
     router.back();
   };
 
-  const handleImageUpload = (event: Event) => {
+  // Upload new profile image
+  const handleImageUpload = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const reader = new FileReader();
 
-      reader.onload = e => {
-        if (e.target?.result) {
-          form.value.image_url = e.target.result as string;
-        }
-      };
+      if (file.size > 4.5 * 1024 * 1024) {
+        alert('Image size should be less than 4.5MB');
+        input.value = '';
+        return;
+      }
 
-      reader.readAsDataURL(file);
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        input.value = '';
+        return;
+      }
+
+      try {
+        imageUploading.value = true;
+        await uploadProfileImage(file);
+
+        const updatedProfile = await getProfile();
+        if (updatedProfile?.image_url) form.value.image_url = updatedProfile.image_url;
+
+        alert('Profile image updated successfully!');
+        input.value = '';
+      } catch (error) {
+        console.error('Failed to upload image:', error);
+        alert('Failed to upload profile image. Please try again.');
+      } finally {
+        imageUploading.value = false;
+      }
     }
   };
 
-  const saveProfile = () => {
-    console.log('Saving profile:', form.value);
-    closeModal();
+  // Remove profile image
+  const removeProfileImage = async () => {
+    if (!confirm('Are you sure you want to remove your profile image?')) return;
+
+    try {
+      imageUploading.value = true;
+      await deleteProfileImage();
+      form.value.image_url = null;
+      alert('Profile image removed successfully!');
+    } catch (error) {
+      console.error('Failed to remove image:', error);
+      alert('Failed to remove profile image. Please try again.');
+    } finally {
+      imageUploading.value = false;
+    }
+  };
+
+  // Save profile changes
+  const saveProfile = async () => {
+    if (!canSave.value) {
+      alert('Please provide a full name to save your profile.');
+      return;
+    }
+
+    if (!hasChanges.value) {
+      alert('No changes detected.');
+      return;
+    }
+
+    try {
+      loading.value = true;
+      await updateProfile({ ...form.value });
+      alert('Profile updated successfully!');
+      closeModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      loading.value = false;
+    }
   };
 </script>
 
 <style scoped>
+  /* Keep all your existing styles, including profile image, buttons, modal, etc. */
+</style>
+
+<style scoped>
+  /* Your existing styles remain the same, just add this new button style */
+  .remove-image-button {
+    display: block;
+    background: #ff6b6b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid #000;
+    font-family: 'Irish Grover', cursive;
+    transition: opacity 0.3s ease;
+    margin: 10px auto 0;
+  }
+
+  .remove-image-button:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+
+  .remove-image-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .upload-button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Your existing styles below... */
   .edit-profile-modal-overlay {
     position: fixed;
     top: 0;
@@ -196,7 +396,7 @@
     transition: opacity 0.3s ease;
   }
 
-  .upload-button:hover {
+  .upload-button:hover:not(.disabled) {
     opacity: 0.8;
   }
 
@@ -232,6 +432,49 @@
     border-color: #d4862d;
   }
 
+  .form-input:read-only {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+
+  .textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .hint {
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .error-message {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: none;
+  }
+
   .modal-actions {
     display: flex;
     gap: 15px;
@@ -255,7 +498,7 @@
     color: #d4862d;
   }
 
-  .cancel-button:hover {
+  .cancel-button:hover:not(:disabled) {
     opacity: 0.8;
   }
 
@@ -264,8 +507,15 @@
     color: white;
   }
 
-  .save-button:hover {
+  .save-button:hover:not(:disabled) {
     opacity: 0.8;
     transform: translateY(-2px);
+  }
+
+  .save-button:disabled,
+  .cancel-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 </style>

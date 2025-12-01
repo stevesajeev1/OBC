@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
-  import { computed, onUnmounted, ref, watch } from 'vue';
-  import { getProfile } from './api/profile';
+  import { computed, onMounted, ref, onUnmounted, watch } from 'vue';
+  import { getProfile, type Profile } from './api/profile';
   import { user } from './state';
   import { signOut } from './api/auth';
   import { useRouter } from 'vue-router';
@@ -9,12 +9,26 @@
 
   const profileDialogOpen = ref<boolean>(false);
 
+  // Actual profile data
+  const profileData = ref<Profile | null>(null);
+
+  onMounted(async () => {
+    profileData.value = await getProfile();
+  });
+
   watch(user, () => {
     if (!user.value) profileDialogOpen.value = false;
   });
 
-  const profile = computed(() => {
-    return getProfile();
+  const profileImageUrl = computed(() => {
+    return (
+      profileData.value?.image_url ||
+      'https://cdn.vectorstock.com/i/500p/29/52/faceless-male-avatar-in-hoodie-vector-56412952.jpg'
+    );
+  });
+
+  const profileName = computed(() => {
+    return profileData.value?.full_name || 'User';
   });
 
   const toggleProfileDialog = () => {
@@ -45,6 +59,11 @@
     profileDialogOpen.value = false;
     router.push({ name: 'saved-listings' });
   };
+
+  watch(
+    () => router.currentRoute.value.path,
+    () => {}
+  );
 </script>
 
 <template>
@@ -58,24 +77,26 @@
       <div class="nav-links">
         <router-link to="/" class="nav-link">Home</router-link>
         <router-link to="/internships" class="nav-link">Internships</router-link>
-        <router-link to="/networking" class="nav-link">Networking</router-link>
         <router-link to="/team" class="nav-link">About</router-link>
         <template v-if="user === null">
           <router-link to="/login" class="nav-link join-now">Login</router-link>
           <router-link to="/join" class="nav-link join-now">Register</router-link>
         </template>
         <div v-else id="nav-profile" @click="toggleProfileDialog">
-          <img :src="profile?.image_url" alt="Profile Picture" />
+          <img :src="profileImageUrl" alt="Profile Picture" />
         </div>
       </div>
     </nav>
+
     <router-view />
+
     <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
-      <span>Hi, {{ profile?.name }}!</span>
-      <router-link :to="{ name: 'edit-profile' }" @click="profileDialogOpen = false">Manage your Account</router-link>
+      <span>Hi, {{ profileName }}!</span>
+      <router-link :to="{ name: 'edit-profile' }" @click="profileDialogOpen = false"> Manage your Account </router-link>
       <div class="saved-listings-button" @click="goToSavedListings">Saved Listings</div>
       <div id="logout" @click="handleSignOut">Logout</div>
     </dialog>
+
     <div v-if="profileDialogOpen" id="profile-triangle"></div>
   </div>
 </template>
@@ -230,9 +251,6 @@
     transition: opacity 0.3s ease;
     z-index: 1000;
     position: relative;
-  }
-
-  #nav-profile:hover {
     cursor: pointer;
   }
 
@@ -320,10 +338,10 @@
     transition: opacity 0.3s ease;
     border-radius: 5px;
     font-family: 'Irish Grover', cursive;
+    cursor: pointer;
   }
 
   #logout:hover {
-    cursor: pointer;
     opacity: 0.8;
   }
 
