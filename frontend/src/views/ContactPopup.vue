@@ -168,7 +168,8 @@
   .prevInternships {
     position: absolute;
     top: 507px;
-    left: 540px;
+    left: 400px;
+    right: 40px;
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-end;

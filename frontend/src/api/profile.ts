@@ -1,5 +1,6 @@
 import { user } from '@/state';
 import { axiosInstance } from './axios';
+import type { PaginatedResponse } from './util';
 
 // TODO: Replace with actual logic to get profile
 export const getProfile = () => {
@@ -18,7 +19,7 @@ export interface Internship {
 }
 
 export interface Profile {
-  full_name: string | null;
+  full_name: string;
   major: string | null;
   grad_year: number | null;
   linkedin_url: string | null;
@@ -26,14 +27,6 @@ export interface Profile {
   image_url: string | null;
   prev_internships: Internship[];
   public: boolean;
-}
-
-// Generic paginated response that can wrap any item type
-export interface PaginatedResponse<T> {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
 }
 
 export const getAllProfiles = async (page: number = 0, pageSize: number = 100): Promise<Profile[]> => {

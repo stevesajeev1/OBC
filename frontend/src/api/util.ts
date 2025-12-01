@@ -30,3 +30,11 @@ export const getApiHost = (): string => {
 
   return DEFAULT_HOST;
 };
+
+// Generic paginated response that can wrap any item type
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}

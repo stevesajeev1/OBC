@@ -1,4 +1,5 @@
 import { axiosInstance } from './axios';
+import type { PaginatedResponse } from './util';
 
 export interface Company {
   id: number;
@@ -6,14 +7,7 @@ export interface Company {
   logo_url?: string | null;
 }
 
-export interface PaginatedCompaniesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Company[];
-}
-
 export const getAllCompanies = async (page: number = 0, pageSize: number = 200): Promise<Company[]> => {
-  const res = await axiosInstance.get<PaginatedCompaniesResponse>('/companies/', { params: { page, pageSize } });
+  const res = await axiosInstance.get<PaginatedResponse<Company>>('/companies/', { params: { page, pageSize } });
   return res.data.results;
 };

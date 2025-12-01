@@ -79,7 +79,7 @@
   import ContactPopup from './ContactPopup.vue';
   import { getAllProfiles, type Profile as BackendProfile } from '@/api/profile';
   import { getAllCompanies, type Company } from '@/api/companies';
-  import Fuse from 'fuse.js';
+  import Fuse, { type IFuseOptions } from 'fuse.js';
 
   interface Person {
     id: number;
@@ -166,7 +166,7 @@
 
   // Setup Fuse.js for fuzzy search across person data
   const fuse = ref<Fuse<Person> | null>(null);
-  const fuseOptions: Fuse.IFuseOptions<Person> = {
+  const fuseOptions: IFuseOptions<Person> = {
     includeScore: true,
     threshold: 0.35,
     ignoreLocation: true,
@@ -359,7 +359,7 @@
   }
 
   .name {
-    font-family: 'Inria Sans', sans-serif;
+    font-family: 'Irish Grover', sans-serif;
     font-size: 32px;
     color: white;
     margin: 0 0 0 84px;
@@ -372,7 +372,7 @@
   }
 
   .role {
-    font-family: 'Inria Sans', sans-serif;
+    font-family: 'Irish Grover', sans-serif;
     font-size: 16px;
     color: white;
     margin: 4px 0 0 84px;
@@ -385,7 +385,7 @@
   }
 
   .internedAt {
-    font-family: 'Inria Sans', sans-serif;
+    font-family: 'Irish Grover', sans-serif;
     font-size: 20px;
     color: white;
     font-weight: 400;
@@ -412,7 +412,7 @@
 
   .contactButton {
     position: absolute;
-    bottom: 29px;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     width: 209px;
