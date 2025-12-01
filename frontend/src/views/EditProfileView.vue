@@ -23,7 +23,7 @@
             {{ imageUploading ? 'Uploading...' : 'Change Profile Picture' }}
           </label>
           <button
-            v-if="form.image_url"
+            v-if="currentImageUrl !== defaultPfp"
             class="remove-image-button"
             @click="removeProfileImage"
             :disabled="imageUploading"
@@ -104,15 +104,20 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted, computed, defineEmits } from 'vue';
   import { useRouter } from 'vue-router';
   import { getProfile, updateProfile, uploadProfileImage, deleteProfileImage, type ProfileUpdate } from '@/api/profile';
   import defaultPfp from '@/assets/default_pfp.jpg';
 
   const router = useRouter();
+  const emit = defineEmits<{
+    (e: 'profile-updated', updatedProfile: { full_name: string; image_url: string }): void;
+  }>();
 
   const loading = ref(false);
   const imageUploading = ref(false);
+
+  const currentImageUrl = ref<string>(defaultPfp);
 
   const form = ref<ProfileUpdate>({
     full_name: '',
@@ -120,19 +125,18 @@
     grad_year: null,
     linkedin_url: null,
     bio: null,
-    image_url: null,
-    public: true
+    public: false
   });
 
   const originalProfile = ref<ProfileUpdate | null>(null);
 
-  const profileImageUrl = computed(() => form.value.image_url || defaultPfp);
+  const profileImageUrl = computed(() => currentImageUrl.value);
 
   const canSave = computed(() => !!form.value?.full_name?.trim().length);
 
   const hasChanges = computed(() => {
     if (!originalProfile.value) return false;
-    return JSON.stringify(form.value) !== JSON.stringify(originalProfile.value);
+    return JSON.stringify({ ...form.value }) !== JSON.stringify({ ...originalProfile.value });
   });
 
   onMounted(async () => {
@@ -140,16 +144,18 @@
       loading.value = true;
       const currentProfile = await getProfile();
       if (currentProfile) {
-        originalProfile.value = { ...currentProfile };
-        form.value = {
-          full_name: currentProfile.full_name || '',
+        currentImageUrl.value = currentProfile.image_url || defaultPfp;
+
+        originalProfile.value = {
+          full_name: currentProfile.full_name,
           major: currentProfile.major,
           grad_year: currentProfile.grad_year,
           linkedin_url: currentProfile.linkedin_url,
           bio: currentProfile.bio,
-          image_url: currentProfile.image_url || defaultPfp,
-          public: currentProfile.public !== false
+          public: currentProfile.public
         };
+
+        form.value = { ...originalProfile.value };
       }
     } catch (error) {
       console.error('Failed to load profile:', error);
@@ -186,7 +192,12 @@
         await uploadProfileImage(file);
 
         const updatedProfile = await getProfile();
-        form.value.image_url = updatedProfile?.image_url || defaultPfp;
+        currentImageUrl.value = updatedProfile?.image_url || defaultPfp;
+
+        emit('profile-updated', {
+          full_name: form.value.full_name || '',
+          image_url: currentImageUrl.value
+        });
 
         alert('Profile image updated successfully!');
         input.value = '';
@@ -205,7 +216,13 @@
     try {
       imageUploading.value = true;
       await deleteProfileImage();
-      form.value.image_url = defaultPfp;
+      currentImageUrl.value = defaultPfp;
+
+      emit('profile-updated', {
+        full_name: form.value.full_name || '',
+        image_url: currentImageUrl.value
+      });
+
       alert('Profile image removed successfully!');
     } catch (error) {
       console.error('Failed to remove image:', error);
@@ -228,10 +245,16 @@
 
     try {
       loading.value = true;
-      await updateProfile({ ...form.value });
+      const updatedProfile = await updateProfile({ ...form.value });
+
+      emit('profile-updated', {
+        full_name: updatedProfile.full_name || '',
+        image_url: currentImageUrl.value
+      });
+
       alert('Profile updated successfully!');
+      originalProfile.value = { ...form.value };
       closeModal();
-      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       console.error('Failed to update profile:', error);
       alert('Failed to update profile. Please try again.');

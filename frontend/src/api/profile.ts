@@ -26,7 +26,6 @@ export interface ProfileUpdate {
   grad_year?: number | null;
   linkedin_url?: string | null;
   bio?: string | null;
-  image_url?: string | null;
   prev_internships?: Internship[];
   public?: boolean;
 }
@@ -36,7 +35,6 @@ export const getProfile = async (): Promise<Profile | null> => {
     const response = await axiosInstance.get<Profile>('/profiles/me');
     const profile = response.data;
 
-    // Fallback image
     if (!profile.image_url) {
       profile.image_url = defaultPfp;
     }
@@ -52,15 +50,18 @@ export const getProfile = async (): Promise<Profile | null> => {
       linkedin_url: null,
       bio: null,
       prev_internships: [],
-      public: true
+      public: false
     };
   }
 };
 
 export const updateProfile = async (profileData: ProfileUpdate): Promise<Profile> => {
   try {
-    const response = await axiosInstance.patch<Profile>('/profiles/me', profileData);
+    const { image_url: _image_url, ...cleaned } = profileData as ProfileUpdate & { image_url?: string };
+
+    const response = await axiosInstance.patch<Profile>('/profiles/me', cleaned);
     const profile = response.data;
+
     if (!profile.image_url) {
       profile.image_url = defaultPfp;
     }
@@ -73,11 +74,15 @@ export const updateProfile = async (profileData: ProfileUpdate): Promise<Profile
 
 export const uploadProfileImage = async (file: File): Promise<void> => {
   try {
-    const response = await axiosInstance.put('/images/profile', file, {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axiosInstance.put('/images/profile', formData, {
       headers: {
-        'Content-Type': file.type
+        'Content-Type': 'multipart/form-data'
       }
     });
+
     return response.data;
   } catch (error) {
     console.error('Error uploading profile image:', error);

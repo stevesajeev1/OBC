@@ -30,7 +30,7 @@
               class="company-logo"
             />
           </div>
-          <p class="company">{{ favorite.company.name }} � {{ formatLocations(favorite.locations) }}</p>
+          <p class="company">{{ favorite.company.name }} - {{ formatLocations(favorite.locations) }}</p>
           <p class="posted-date">Posted: {{ formatDate(favorite.date_posted) }}</p>
           <div class="job-meta">
             <span v-if="favorite.category" class="category-tag">{{ formatCategoryDisplay(favorite.category) }}</span>
@@ -144,6 +144,8 @@
 </script>
 
 <style scoped>
+  @import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
+
   .saved-listings-view {
     width: 100vw;
     padding: 2rem;
@@ -377,7 +379,6 @@
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: bold;
-    font-family: 'Irish Grover', cursive;
   }
 
   .category-tag {
@@ -413,7 +414,6 @@
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    font-family: 'Irish Grover', cursive;
     transition: background-color 0.3s ease;
   }
 

@@ -1,5 +1,5 @@
 ﻿<script lang="ts" setup>
-  import { computed, onMounted, ref, onUnmounted, watch } from 'vue';
+  import { computed, onMounted, ref, onUnmounted } from 'vue';
   import { getProfile, type Profile } from './api/profile';
   import { user } from './state';
   import { signOut } from './api/auth';
@@ -7,7 +7,6 @@
   import defaultPfp from '@/assets/default_pfp.jpg';
 
   const router = useRouter();
-
   const profileDialogOpen = ref<boolean>(false);
 
   const profileData = ref<Profile | null>(null);
@@ -16,17 +15,8 @@
     profileData.value = await getProfile();
   });
 
-  watch(user, () => {
-    if (!user.value) profileDialogOpen.value = false;
-  });
-
-  const profileImageUrl = computed(() => {
-    return profileData.value?.image_url || defaultPfp;
-  });
-
-  const profileName = computed(() => {
-    return profileData.value?.full_name || 'User';
-  });
+  const profileImageUrl = computed(() => profileData.value?.image_url || defaultPfp);
+  const profileName = computed(() => profileData.value?.full_name || 'User');
 
   const toggleProfileDialog = () => {
     profileDialogOpen.value = !profileDialogOpen.value;
@@ -56,10 +46,12 @@
     router.push({ name: 'saved-listings' });
   };
 
-  watch(
-    () => router.currentRoute.value.path,
-    () => {}
-  );
+  const onProfileUpdated = (updatedProfile: { full_name: string; image_url: string }) => {
+    if (profileData.value) {
+      profileData.value.full_name = updatedProfile.full_name;
+      profileData.value.image_url = updatedProfile.image_url;
+    }
+  };
 </script>
 
 <template>
@@ -85,7 +77,9 @@
       </div>
     </nav>
 
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <component :is="Component" @profile-updated="onProfileUpdated" />
+    </router-view>
 
     <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
       <span>Hi, {{ profileName }}!</span>
@@ -223,23 +217,6 @@
     border-color: #d4862d;
   }
 
-  .nav-link:not(.join-now).router-link-active::after {
-    content: '';
-    position: absolute;
-    top: 37px;
-    left: 50%;
-    width: 100%;
-    height: 2px;
-    background: white;
-    transform: translateX(-50%) scaleX(0);
-    animation: underlineGrow 0.3s ease-out forwards;
-    box-shadow:
-      -1px -1px 0 #000,
-      1px -1px 0 #000,
-      -1px 1px 0 #000,
-      1px 1px 0 #000;
-  }
-
   #nav-profile {
     height: 75px;
     aspect-ratio: 1;
@@ -363,37 +340,5 @@
 
   .saved-listings-button:hover {
     opacity: 0.8;
-  }
-
-  .join-now.router-link-active {
-    color: #d4862d !important;
-    border-color: #d4862d !important;
-    background-color: rgba(212, 134, 45, 0.1) !important;
-  }
-
-  @keyframes underlineGrow {
-    from {
-      transform: translateX(-50%) scaleX(0);
-    }
-
-    to {
-      transform: translateX(-50%) scaleX(1);
-    }
-  }
-
-  .nav-link:hover,
-  .nav-link:focus,
-  .nav-link:active {
-    background: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-  }
-
-  .logo-container a:hover,
-  .logo-container a:focus,
-  .logo-container a:active {
-    background: none !important;
-    outline: none !important;
-    box-shadow: none !important;
   }
 </style>
