@@ -104,6 +104,7 @@
           >
             <img
               :src="isFavorited(job.item.id) ? bookmarkMarked : bookmarkUnmarked"
+              :key="`${job.item.id}-${isFavorited(job.item.id) ? 1 : 0}`"
               alt="bookmark"
               class="bookmark-img"
             />
