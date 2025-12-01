@@ -21,7 +21,7 @@ class Profile(BaseModel):
     bio: Optional[str] = None
     image_url: Optional[str] = None
     prev_internships: list[Internship] = []
-    public: bool = False
+    public: bool = True
 
     @classmethod
     def from_db(
@@ -48,7 +48,7 @@ class Profile(BaseModel):
             bio=profile_row.get("bio"),
             image_url=profile_row.get("image_url"),
             prev_internships=internships,
-            public=profile_row.get("public", False),
+            public=profile_row.get("public", True),
         )
 
 
@@ -60,8 +60,9 @@ class ProfileUpdate(BaseModel):
     grad_year: Optional[int] = None
     linkedin_url: Optional[str] = None
     bio: Optional[str] = None
+    image_url: Optional[str] = None
     prev_internships: Optional[list[Internship]] = None
     public: Optional[bool] = Field(
-        default=None,
+        default=True,
         description="A profile can only be marked as public if it has a full name set.",
     )
