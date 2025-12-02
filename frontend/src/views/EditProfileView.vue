@@ -9,7 +9,7 @@
       <div class="modal-content">
         <div class="profile-image-section">
           <div class="image-preview">
-            <img :src="profileImageUrl" alt="Profile Preview" class="profile-preview" />
+            <img :src="profileImageUrl" :key="profileImageUrl" alt="Profile Preview" class="profile-preview" />
           </div>
           <input
             type="file"
