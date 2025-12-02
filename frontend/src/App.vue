@@ -1,5 +1,5 @@
 ﻿<script lang="ts" setup>
-  import { computed, onMounted, ref, onUnmounted } from 'vue';
+  import { computed, ref, onUnmounted, watch, nextTick } from 'vue';
   import { getProfile, type Profile } from './api/profile';
   import { user } from './state';
   import { signOut } from './api/auth';
@@ -11,7 +11,7 @@
 
   const profileData = ref<Profile | null>(null);
 
-  onMounted(async () => {
+  watch(user, async () => {
     profileData.value = await getProfile();
   });
 
@@ -50,9 +50,11 @@
     router.push({ name: 'saved-listings' });
   };
 
-  const onProfileUpdated = (updatedProfile: { full_name: string; image_url: string }) => {
+  const onProfileUpdated = async (updatedProfile: { full_name: string; image_url: string }) => {
     if (profileData.value) {
       profileData.value.full_name = updatedProfile.full_name;
+      profileData.value.image_url = '';
+      await nextTick();
       profileData.value.image_url = updatedProfile.image_url;
     }
   };
