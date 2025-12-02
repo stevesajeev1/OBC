@@ -67,12 +67,14 @@
         <router-link to="/internships" class="nav-link">Internships</router-link>
         <router-link to="/networking" class="nav-link">Networking</router-link>
         <router-link to="/team" class="nav-link">About</router-link>
+
         <template v-if="user === null">
           <router-link to="/login" class="nav-link join-now">Login</router-link>
           <router-link to="/join" class="nav-link join-now">Register</router-link>
         </template>
+
         <div v-else id="nav-profile" @click="toggleProfileDialog">
-          <img :src="profileImageUrl" alt="Profile Picture" />
+          <img :src="profileImageUrl" :key="profileImageUrl" alt="Profile Picture" />
         </div>
       </div>
     </nav>
