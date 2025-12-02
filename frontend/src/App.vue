@@ -1,22 +1,26 @@
 ﻿<script lang="ts" setup>
-  import { computed, onUnmounted, ref, watch } from 'vue';
-  import { getProfile } from './api/profile';
+  import { computed, ref, onUnmounted, watch, nextTick } from 'vue';
+  import { getProfile, type Profile } from './api/profile';
   import { user } from './state';
   import { signOut } from './api/auth';
   import { useRouter } from 'vue-router';
+  import defaultPfp from '@/assets/default_pfp.jpg';
 
   const router = useRouter();
-
   const profileDialogOpen = ref<boolean>(false);
 
-  watch(user, () => {
-    if (!user.value) profileDialogOpen.value = false;
+  const profileData = ref<Profile | null>(null);
+
+  watch(user, async () => {
+    profileData.value = await getProfile();
   });
 
-  const profile = computed(() => {
-    if (!user.value) return;
-    return getProfile();
+  const profileImageUrl = computed(() => {
+    const url = profileData.value?.image_url || defaultPfp;
+    return `${url}?t=${Date.now()}`;
   });
+
+  const profileName = computed(() => profileData.value?.full_name || 'User');
 
   const toggleProfileDialog = () => {
     profileDialogOpen.value = !profileDialogOpen.value;
@@ -25,10 +29,9 @@
   const handleDialogExit = (e: MouseEvent) => {
     let target = e.target as HTMLElement;
     while (target && target.parentElement) {
-      if (['nav-profile', 'profile-dialog'].includes(target.id)) return;
+      if (['nav-profile', 'profile-dialog', 'profile-triangle'].includes(target.id)) return;
       target = target.parentElement;
     }
-
     profileDialogOpen.value = false;
   };
 
@@ -40,6 +43,20 @@
   const handleSignOut = async () => {
     await signOut();
     router.push({ name: 'login' });
+  };
+
+  const goToSavedListings = () => {
+    profileDialogOpen.value = false;
+    router.push({ name: 'saved-listings' });
+  };
+
+  const onProfileUpdated = async (updatedProfile: { full_name: string; image_url: string }) => {
+    if (profileData.value) {
+      profileData.value.full_name = updatedProfile.full_name;
+      profileData.value.image_url = '';
+      await nextTick();
+      profileData.value.image_url = updatedProfile.image_url;
+    }
   };
 </script>
 
@@ -56,23 +73,30 @@
         <router-link to="/internships" class="nav-link">Internships</router-link>
         <router-link to="/networking" class="nav-link">Networking</router-link>
         <router-link to="/team" class="nav-link">About</router-link>
+
         <template v-if="user === null">
           <router-link to="/login" class="nav-link join-now">Login</router-link>
           <router-link to="/join" class="nav-link join-now">Register</router-link>
         </template>
+
         <div v-else id="nav-profile" @click="toggleProfileDialog">
-          <img :src="profile?.image_url" alt="Profile Picture" />
+          <img :src="profileImageUrl" :key="profileImageUrl" alt="Profile Picture" />
         </div>
       </div>
     </nav>
-    <router-view />
+
+    <router-view v-slot="{ Component }">
+      <component :is="Component" @profile-updated="onProfileUpdated" />
+    </router-view>
+
     <dialog v-if="profileDialogOpen" id="profile-dialog" :open="profileDialogOpen">
-      <div id="profile-dialog-close" @click="profileDialogOpen = false">&#10006;</div>
-      <img :src="profile?.image_url" alt="Profile Picture" />
-      <span>Hi, {{ profile?.name }}!</span>
-      <router-link to="/profile" @click="profileDialogOpen = false">Manage your Account</router-link>
+      <span>Hi, {{ profileName }}!</span>
+      <router-link :to="{ name: 'edit-profile' }" @click="profileDialogOpen = false"> Manage your Account </router-link>
+      <div class="saved-listings-button" @click="goToSavedListings">Saved Listings</div>
       <div id="logout" @click="handleSignOut">Logout</div>
     </dialog>
+
+    <div v-if="profileDialogOpen" id="profile-triangle"></div>
   </div>
 </template>
 
@@ -117,7 +141,7 @@
     left: 0;
     right: 0;
     height: 100px;
-    z-index: 1000;
+    z-index: 999;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -201,33 +225,14 @@
     border-color: #d4862d;
   }
 
-  .nav-link:not(.join-now).router-link-active::after {
-    content: '';
-    position: absolute;
-    top: 37px;
-    left: 50%;
-    width: 100%;
-    height: 2px;
-    background: white;
-    transform: translateX(-50%) scaleX(0);
-    animation: underlineGrow 0.3s ease-out forwards;
-    box-shadow:
-      -1px -1px 0 #000,
-      1px -1px 0 #000,
-      -1px 1px 0 #000,
-      1px 1px 0 #000;
-  }
-
   #nav-profile {
     height: 75px;
     aspect-ratio: 1;
     border-radius: 50%;
     border: 2px solid black;
     transition: opacity 0.3s ease;
-  }
-
-  #nav-profile:hover,
-  #profile-dialog-close:hover {
+    z-index: 1000;
+    position: relative;
     cursor: pointer;
   }
 
@@ -240,9 +245,8 @@
 
   #profile-dialog {
     --width: 300px;
-
     position: absolute;
-    top: 100px;
+    top: 105px;
     left: calc(100% - var(--width) - 2rem);
     width: var(--width);
     margin: 0;
@@ -250,63 +254,99 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: #7a9ccf;
+    border: 2px solid #7a9ccf;
+    border-radius: 10px;
+    color: #d4862d;
+    font-family: 'Irish Grover', cursive;
+    z-index: 1001;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+    box-shadow:
+      -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000;
   }
 
-  #profile-dialog-close {
+  #profile-triangle {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: large;
+    top: 95px;
+    left: calc(100% - 79px);
+    width: 20px;
+    height: 20px;
+    background: #7a9ccf;
+    transform: rotate(45deg);
+    z-index: 1001;
+    box-shadow:
+      -2px -2px 0 #000,
+      0px -0px 0 #000,
+      -0px 0px 0 #000,
+      0px 0px 0 #000;
   }
 
-  #profile-dialog img {
-    height: auto;
-    width: 50%;
-    object-fit: cover;
+  #profile-dialog span {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
   }
 
-  #logout {
-    margin-top: 20px;
-    background: black;
+  #profile-dialog a {
+    background: #d4862d;
     color: white;
     padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
     transition: opacity 0.3s ease;
+    box-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+    margin: 10px 0;
   }
 
-  #logout:hover {
-    cursor: pointer;
+  #profile-dialog a:hover {
     opacity: 0.8;
   }
 
-  .join-now.router-link-active {
-    color: #d4862d !important;
-    border-color: #d4862d !important;
-    background-color: rgba(212, 134, 45, 0.1) !important;
+  #logout {
+    margin-top: 10px;
+    background: black;
+    color: #d4862d;
+    padding: 10px 20px;
+    transition: opacity 0.3s ease;
+    border-radius: 5px;
+    font-family: 'Irish Grover', cursive;
+    cursor: pointer;
   }
 
-  @keyframes underlineGrow {
-    from {
-      transform: translateX(-50%) scaleX(0);
-    }
-
-    to {
-      transform: translateX(-50%) scaleX(1);
-    }
+  #logout:hover {
+    opacity: 0.8;
   }
 
-  .nav-link:hover,
-  .nav-link:focus,
-  .nav-link:active {
-    background: none !important;
-    outline: none !important;
-    box-shadow: none !important;
+  .saved-listings-button {
+    background: #5a7caf;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+    margin: 10px 0;
+    cursor: pointer;
+    border: 1px solid #000;
+    font-family: 'Irish Grover', cursive;
+    text-align: center;
+    box-shadow:
+      -0.5px -0.5px 0 #000,
+      0.5px -0.5px 0 #000,
+      -0.5px 0.5px 0 #000,
+      0.5px 0.5px 0 #000;
   }
 
-  .logo-container a:hover,
-  .logo-container a:focus,
-  .logo-container a:active {
-    background: none !important;
-    outline: none !important;
-    box-shadow: none !important;
+  .saved-listings-button:hover {
+    opacity: 0.8;
   }
 </style>

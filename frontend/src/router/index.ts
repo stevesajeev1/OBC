@@ -11,7 +11,6 @@ export const router = createRouter({
     {
       path: '/internships',
       name: 'internships',
-
       component: () => import('../views/HomeView.vue')
     },
     {
@@ -38,6 +37,16 @@ export const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue')
+    },
+    {
+      path: '/edit-profile',
+      name: 'edit-profile',
+      component: () => import('../views/EditProfileView.vue')
+    },
+    {
+      path: '/saved-listings',
+      name: 'saved-listings',
+      component: () => import('../views/SavedListingsView.vue')
     }
   ]
 });

@@ -104,8 +104,6 @@
     const variants: Array<'cardBlue' | 'cardDark' | 'cardRed'> = ['cardBlue', 'cardDark', 'cardRed'];
     const internships = profile.prev_internships || [];
 
-    const username = profile.full_name;
-
     // Use the LinkedIn profile URL directly from backend
     const linkedinUrl = profile.linkedin_url || '';
 
@@ -117,7 +115,7 @@
 
     return {
       id: index + 1,
-      username,
+      username: profile.full_name || 'Anonymous',
       fullName: profile.full_name || 'Anonymous User',
       role: internships[0]?.role || profile.major || 'Student',
       profileImage: profile.image_url || new URL('./assets/default_pfp.jpg', import.meta.url).href,

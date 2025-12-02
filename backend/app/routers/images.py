@@ -34,6 +34,7 @@ async def put_profile_image(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Could not update profile image",
         )
+    return url
 
 
 @router.delete("/profile", status_code=status.HTTP_200_OK)
