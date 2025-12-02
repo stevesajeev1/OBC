@@ -15,7 +15,11 @@
     profileData.value = await getProfile();
   });
 
-  const profileImageUrl = computed(() => profileData.value?.image_url || defaultPfp);
+  const profileImageUrl = computed(() => {
+    const url = profileData.value?.image_url || defaultPfp;
+    return `${url}?t=${Date.now()}`;
+  });
+
   const profileName = computed(() => profileData.value?.full_name || 'User');
 
   const toggleProfileDialog = () => {
