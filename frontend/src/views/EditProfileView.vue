@@ -84,6 +84,88 @@
           ></textarea>
         </div>
 
+        <div class="form-group internships-section">
+          <div class="section-header">
+            <label>Previous Internships</label>
+            <button
+              type="button"
+              class="add-internship-button"
+              @click="addInternship"
+              :disabled="loading || imageUploading"
+            >
+              + Add Internship
+            </button>
+          </div>
+
+          <div class="internships-list">
+            <div v-for="(internship, index) in form.prev_internships" :key="index" class="internship-item">
+              <div class="internship-header">
+                <h4>Internship #{{ index + 1 }}</h4>
+                <button type="button" class="remove-internship-button" @click="removeInternship(index)">Remove</button>
+              </div>
+
+              <div class="internship-fields">
+                <div class="form-group">
+                  <label :for="`company-${index}`">Company *</label>
+                  <input
+                    type="text"
+                    :id="`company-${index}`"
+                    v-model="internship.company"
+                    placeholder="e.g., Google"
+                    class="form-input"
+                    :class="{ error: !internship.company?.trim() }"
+                  />
+                  <span class="error-message" v-if="!internship.company?.trim()">Company is required</span>
+                </div>
+
+                <div class="form-group">
+                  <label :for="`role-${index}`">Role *</label>
+                  <input
+                    type="text"
+                    :id="`role-${index}`"
+                    v-model="internship.role"
+                    placeholder="e.g., Software Engineering Intern"
+                    class="form-input"
+                    :class="{ error: !internship.role?.trim() }"
+                  />
+                  <span class="error-message" v-if="!internship.role?.trim()">Role is required</span>
+                </div>
+
+                <div class="form-group">
+                  <label :for="`time_period-${index}`">Time Period *</label>
+                  <div class="time-period-inputs">
+                    <input
+                      type="text"
+                      :id="`time_period-start-${index}`"
+                      v-model="internship.time_period[0]"
+                      placeholder="Start (e.g., Summer 2023)"
+                      class="form-input time-period-input"
+                      :class="{ error: !internship.time_period[0]?.trim() }"
+                    />
+                    <span class="time-period-separator">to</span>
+                    <input
+                      type="text"
+                      :id="`time_period-end-${index}`"
+                      v-model="internship.time_period[1]"
+                      placeholder="End (e.g., Fall 2023)"
+                      class="form-input time-period-input"
+                      :class="{ error: !internship.time_period[1]?.trim() }"
+                    />
+                  </div>
+                  <span
+                    class="error-message"
+                    v-if="!internship.time_period[0]?.trim() || !internship.time_period[1]?.trim()"
+                  >
+                    Time period is required
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <small class="hint">Add your previous internship experiences to showcase your background</small>
+        </div>
+
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
             <input type="checkbox" v-model="form.public" class="checkbox" />
@@ -125,6 +207,7 @@
     grad_year: null,
     linkedin_url: null,
     bio: null,
+    prev_internships: [],
     public: false
   });
 
@@ -132,7 +215,24 @@
 
   const profileImageUrl = computed(() => currentImageUrl.value);
 
-  const canSave = computed(() => !!form.value?.full_name?.trim().length);
+  const canSave = computed(() => {
+    if (!form.value?.full_name?.trim().length) return false;
+
+    if (form.value.prev_internships) {
+      for (const internship of form.value.prev_internships) {
+        if (
+          !internship.company?.trim() ||
+          !internship.role?.trim() ||
+          !internship.time_period[0]?.trim() ||
+          !internship.time_period[1]?.trim()
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  });
 
   const hasChanges = computed(() => {
     if (!originalProfile.value) return false;
@@ -152,10 +252,21 @@
           grad_year: currentProfile.grad_year,
           linkedin_url: currentProfile.linkedin_url,
           bio: currentProfile.bio,
+          prev_internships: currentProfile.prev_internships ? [...currentProfile.prev_internships] : [],
           public: currentProfile.public
         };
 
-        form.value = { ...originalProfile.value };
+        form.value = {
+          ...originalProfile.value,
+          prev_internships: currentProfile.prev_internships ? [...currentProfile.prev_internships] : []
+        };
+
+        if (form.value.prev_internships) {
+          form.value.prev_internships = form.value.prev_internships.map(internship => ({
+            ...internship,
+            time_period: internship.time_period?.length === 2 ? [...internship.time_period] : ['', '']
+          }));
+        }
       }
     } catch (error) {
       console.error('Failed to load profile:', error);
@@ -164,6 +275,24 @@
       loading.value = false;
     }
   });
+
+  const addInternship = () => {
+    if (!form.value.prev_internships) {
+      form.value.prev_internships = [];
+    }
+
+    form.value.prev_internships.push({
+      company: '',
+      role: '',
+      time_period: ['', '']
+    });
+  };
+
+  const removeInternship = (index: number) => {
+    if (form.value.prev_internships) {
+      form.value.prev_internships.splice(index, 1);
+    }
+  };
 
   const closeModal = () => {
     if (hasChanges.value && !confirm('You have unsaved changes. Are you sure you want to leave?')) return;
@@ -234,7 +363,7 @@
 
   const saveProfile = async () => {
     if (!canSave.value) {
-      alert('Please provide a full name to save your profile.');
+      alert('Please provide all required fields (marked with *) to save your profile.');
       return;
     }
 
@@ -265,6 +394,10 @@
 </script>
 
 <style scoped>
+  * {
+    font-family: 'Irish Grover', cursive;
+  }
+
   .remove-image-button {
     display: block;
     background: #ff6b6b;
@@ -273,7 +406,6 @@
     border-radius: 5px;
     cursor: pointer;
     border: 2px solid #000;
-    font-family: 'Irish Grover', cursive;
     transition: opacity 0.3s ease;
     margin: 10px auto 0;
   }
@@ -290,6 +422,123 @@
   .upload-button.disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .internships-section {
+    background: rgba(90, 124, 175, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #000;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .section-header label {
+    margin-bottom: 0;
+  }
+
+  .add-internship-button {
+    background: #d4862d;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid #000;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .add-internship-button:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+  }
+
+  .internships-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 10px;
+  }
+
+  .internship-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+    border: 2px solid #000;
+  }
+
+  .internship-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #000;
+  }
+
+  .internship-header h4 {
+    margin: 0;
+    color: white;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+  }
+
+  .remove-internship-button {
+    background: #ff6b6b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid #000;
+    transition: opacity 0.3s ease;
+    font-size: 0.8rem;
+  }
+
+  .remove-internship-button:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+
+  .remove-internship-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .internship-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .time-period-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .time-period-input {
+    flex: 1;
+  }
+
+  .time-period-separator {
+    color: white;
+    font-weight: bold;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+  }
+
+  .form-input.error {
+    border-color: #ff6b6b;
   }
 
   .edit-profile-modal-overlay {
@@ -325,7 +574,6 @@
     background: #5a7caf;
     border-radius: 12px 12px 0 0;
     color: white;
-    font-family: 'Irish Grover', cursive;
   }
 
   .modal-header h2 {
@@ -352,7 +600,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Irish Grover', cursive;
   }
 
   .close-button:hover {
@@ -397,7 +644,6 @@
     border-radius: 5px;
     cursor: pointer;
     border: 2px solid #000;
-    font-family: 'Irish Grover', cursive;
     transition: opacity 0.3s ease;
   }
 
@@ -414,7 +660,6 @@
     margin-bottom: 5px;
     font-weight: bold;
     color: white;
-    font-family: 'Irish Grover', cursive;
     text-shadow:
       -1px -1px 0 #000,
       1px -1px 0 #000,
@@ -429,7 +674,7 @@
     border-radius: 5px;
     font-size: 1rem;
     background: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Irish Grover', cursive;
   }
 
   .form-input:focus {
@@ -445,6 +690,7 @@
   .textarea {
     resize: vertical;
     min-height: 80px;
+    font-family: 'Irish Grover', cursive;
   }
 
   .checkbox-group {
@@ -469,14 +715,12 @@
     color: #e0e0e0;
     font-size: 0.85rem;
     margin-top: 5px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
   .error-message {
     color: #ff6b6b;
     font-size: 0.85rem;
     margin-top: 5px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-shadow: none;
   }
 
@@ -493,7 +737,6 @@
     border: 2px solid #000;
     border-radius: 5px;
     cursor: pointer;
-    font-family: 'Irish Grover', cursive;
     font-size: 1rem;
     transition: all 0.3s ease;
   }
@@ -522,5 +765,15 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+  }
+  .add-internship-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .form-input::placeholder {
+    font-family: 'Irish Grover', cursive;
+    color: #999;
   }
 </style>
