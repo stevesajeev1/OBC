@@ -213,7 +213,10 @@
 
   const originalProfile = ref<ProfileUpdate | null>(null);
 
-  const profileImageUrl = computed(() => currentImageUrl.value);
+  const profileImageUrl = computed(() => {
+    const url = currentImageUrl.value || defaultPfp;
+    return `${url}?t=${Date.now()}`;
+  });
 
   const canSave = computed(() => {
     if (!form.value?.full_name?.trim().length) return false;
